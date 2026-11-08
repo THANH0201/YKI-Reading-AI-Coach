@@ -1,7 +1,7 @@
-from database.db import get_connection
+from backend.database.db import get_connection
 
-from models.article import Article
-from models.exam_category import (
+from backend.ai_neural_networks.reading.models.article import Article
+from backend.ai_neural_networks.reading.models.exam_category import (
     ARTICLE_QUOTA_PER_CATEGORY,
     EXAM_CATEGORY_RULES
 )

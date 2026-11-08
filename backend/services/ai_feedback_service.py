@@ -1,4 +1,4 @@
-from models.feedback import Feedback
+from backend.ai_neural_networks.reading.models.feedback import Feedback
 
 
 class AIFeedbackService:

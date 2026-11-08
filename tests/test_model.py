@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 from pathlib import Path
 
-from ai import model
+from backend.ai import model
 
 
 def test_ask_qwen_returns_provider_response():

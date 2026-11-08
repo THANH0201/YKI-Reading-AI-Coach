@@ -1,8 +1,8 @@
 import streamlit as st
 
-from services.score_service import ScoreService
-from services.tutor_service import TutorService
-from services.exam_timer_service import (
+from backend.ai_neural_networks.reading.services.score_service import ScoreService
+from backend.ai_neural_networks.reading.services.tutor_service import TutorService
+from backend.ai_neural_networks.reading.services.exam_timer_service import (
     format_remaining,
     remaining_seconds,
 )

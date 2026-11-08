@@ -1,6 +1,6 @@
 import pytest
 
-from services.finnish_morphology_service import generate_paradigm
+from backend.ai_neural_networks.reading.services.finnish_morphology_service import generate_paradigm
 
 
 @pytest.mark.parametrize(

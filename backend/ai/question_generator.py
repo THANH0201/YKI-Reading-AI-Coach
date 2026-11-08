@@ -1,6 +1,6 @@
 import json
 
-from ai.model import ask_qwen
+from backend.ai.model import ask_qwen
 
 DEFAULT_DISTRIBUTION = {
     "multiple_choice": 2,

@@ -1,6 +1,6 @@
 import json
 
-from database.db import get_connection
+from backend.database.db import get_connection
 
 
 class VocabularyRepository:

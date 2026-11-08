@@ -3,15 +3,16 @@ from unittest.mock import patch
 
 import pytest
 
-from models.article import Article
-from models.exam_category import EXAM_CATEGORY_RULES
-from models.question import Question
-from repositories.article_repository import ArticleRepository
-from repositories.question_repository import QuestionRepository
-from services import article_service, exam_service
-from services.ai_feedback_service import AIFeedbackService
-from services.exam_service import ExamService
-from services.score_service import ScoreService
+from backend.ai_neural_networks.reading.models.article import Article
+from backend.ai_neural_networks.reading.models.exam_category import EXAM_CATEGORY_RULES
+from backend.ai_neural_networks.reading.models.question import Question
+from backend.ai_neural_networks.reading.services import article_service
+from backend.repositories.article_repository import ArticleRepository
+from backend.repositories.question_repository import QuestionRepository
+from backend.ai_neural_networks.reading.services import exam_service
+from backend.ai_neural_networks.reading.services.ai_feedback_service import AIFeedbackService
+from backend.ai_neural_networks.reading.services.exam_service import ExamService
+from backend.ai_neural_networks.reading.services.score_service import ScoreService
 
 
 def generated_questions():

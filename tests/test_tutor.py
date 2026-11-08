@@ -12,7 +12,7 @@ from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
 from langchain_core.messages import AIMessage
 from pydantic import ValidationError
 
-from services.tutor_service import (
+from backend.ai_neural_networks.reading.services.tutor_service import (
     GROQ_MODEL,
     MAX_TOOL_CALLS,
     SYSTEM_PROMPT,
@@ -23,7 +23,7 @@ from services.tutor_service import (
     _build_tools,
     _execute_tool,
 )
-from repositories.vocabulary_repository import VocabularyRepository
+from backend.repositories.vocabulary_repository import VocabularyRepository
 
 
 class FakeAgent:

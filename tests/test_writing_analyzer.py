@@ -1,7 +1,7 @@
 import json
 from unittest.mock import patch
 
-from ai.writing_analyzer import analyze_writing
+from backend.ai.writing_analyzer import analyze_writing
 
 
 def valid_analysis():

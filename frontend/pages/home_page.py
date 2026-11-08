@@ -2,16 +2,16 @@ import sqlite3
 
 import streamlit as st
 
-from services.article_ingestion_service import ArticleIngestionService
-from services.article_service import ArticleService
-from services.exam_service import ExamService
-from services.exam_timer_service import create_deadline
-from ai.writing_analyzer import analyze_writing
-from models.exam_category import (
+from backend.ai_neural_networks.reading.services.article_ingestion_service import ArticleIngestionService
+from backend.ai_neural_networks.reading.services.article_service import ArticleService
+from backend.ai_neural_networks.reading.services.exam_service import ExamService
+from backend.ai_neural_networks.reading.services.exam_timer_service import create_deadline
+from backend.ai.writing_analyzer import analyze_writing
+from backend.ai_neural_networks.reading.models.exam_category import (
     ARTICLE_QUOTA_PER_CATEGORY,
     EXAM_CATEGORY_RULES
 )
-from views.exam_page import (
+from frontend.pages.exam_page import (
     render_exam,
     render_exam_results,
     render_exam_timer,

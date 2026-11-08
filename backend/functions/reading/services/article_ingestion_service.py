@@ -13,15 +13,15 @@ import xml.etree.ElementTree as ET
 
 from ai.level_detector import detect_level
 from ai.subject_classifier import classify_subject
-from models.article import Article
-from models.exam_category import (
+from backend.skills.reading.models.article import Article
+from backend.skills.reading.models.exam_category import (
     ARTICLE_QUOTA_PER_CATEGORY,
     EXAM_CATEGORY_RULES
 )
 from repositories.article_ingestion_repository import (
     ArticleIngestionRepository
 )
-from services.exam_service import ExamService
+from backend.skills.reading.services.exam_service import ExamService
 
 logger = logging.getLogger(__name__)
 

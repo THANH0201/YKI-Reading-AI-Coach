@@ -1,6 +1,6 @@
 import json
 
-from ai.model import ask_qwen
+from backend.ai.model import ask_qwen
 
 
 def analyze_writing(text: str) -> dict:

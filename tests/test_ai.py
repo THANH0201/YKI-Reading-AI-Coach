@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from ai.subject_classifier import classify_subject
+from backend.ai.subject_classifier import classify_subject
 
 
 def test_subject_classifier_parses_valid_json():

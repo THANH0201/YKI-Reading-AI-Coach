@@ -1,8 +1,8 @@
-from models.article import Article
-from models.exam_result import ExamResult
-from models.feedback import Feedback
-from models.question import Question
-from models.user_answer import UserAnswer
+from backend.ai_neural_networks.reading.models.article import Article
+from backend.ai_neural_networks.reading.models.exam_result import ExamResult
+from backend.ai_neural_networks.reading.models.feedback import Feedback
+from backend.ai_neural_networks.reading.models.question import Question
+from backend.ai_neural_networks.reading.models.user_answer import UserAnswer
 
 
 def test_domain_models_accept_workflow_data():

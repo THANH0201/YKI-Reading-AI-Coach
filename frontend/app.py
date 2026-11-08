@@ -1,7 +1,7 @@
 import streamlit as st
 
-from database.init_db import init_db
-from views.home_page import render_home
+from backend.database.init_db import init_db
+from frontend.pages.home_page import render_home
 
 st.set_page_config(
     page_title="YKI Reading AI Coach",

@@ -3,15 +3,15 @@ from contextlib import closing
 
 import pytest
 
-from models.article import Article
-from models.exam_result import ExamResult
-from models.question import Question
-from models.user_answer import UserAnswer
-from repositories.article_repository import ArticleRepository
-from repositories.exam_result_repository import ExamResultRepository
-from repositories.question_repository import QuestionRepository
-from repositories.user_answer_repository import UserAnswerRepository
-from repositories.vocabulary_repository import VocabularyRepository
+from backend.ai_neural_networks.reading.models.article import Article
+from backend.ai_neural_networks.reading.models.exam_result import ExamResult
+from backend.ai_neural_networks.reading.models.question import Question
+from backend.ai_neural_networks.reading.models.user_answer import UserAnswer
+from backend.repositories.article_repository import ArticleRepository
+from backend.repositories.exam_result_repository import ExamResultRepository
+from backend.repositories.question_repository import QuestionRepository
+from backend.repositories.user_answer_repository import UserAnswerRepository
+from backend.repositories.vocabulary_repository import VocabularyRepository
 
 
 def make_article():

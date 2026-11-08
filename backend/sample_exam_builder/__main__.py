@@ -1,9 +1,9 @@
 import logging
 import sqlite3
 
-from database.init_db import init_db
-from models.exam_category import EXAM_CATEGORY_RULES
-from sample_exam_builder.seeder import seed_sample_library
+from backend.database.init_db import init_db
+from backend.ai_neural_networks.reading.models.exam_category import EXAM_CATEGORY_RULES
+from backend.sample_exam_builder.seeder import seed_sample_library
 
 
 def main() -> None:

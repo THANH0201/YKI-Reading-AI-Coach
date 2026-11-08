@@ -2,10 +2,10 @@ from unittest.mock import patch
 
 import pytest
 
-from repositories.article_ingestion_repository import (
+from backend.repositories.article_ingestion_repository import (
     ArticleIngestionRepository
 )
-from services.article_ingestion_service import (
+from backend.ai_neural_networks.reading.services.article_ingestion_service import (
     ArticleIngestionService,
     _parse_feed,
     _word_count
@@ -159,7 +159,7 @@ def test_crawl_skips_short_feed_excerpt_without_ai_calls(database):
 
 
 def test_feed_url_rejects_non_public_host(monkeypatch):
-    import services.article_ingestion_service as ingestion
+    import backend.ai_neural_networks.reading.services.article_ingestion_service as ingestion
 
     monkeypatch.setattr(
         ingestion.socket,

@@ -4,7 +4,7 @@ import runpy
 
 
 def test_database_initialization_is_idempotent_and_creates_workflow_tables(database):
-    from database.init_db import init_db
+    from backend.database.init_db import init_db
 
     init_db()
     with closing(database()) as connection:
@@ -55,7 +55,7 @@ def test_database_connection_enables_foreign_keys(database):
 
 
 def test_get_connection_enables_foreign_keys(monkeypatch):
-    import database.db as database_module
+    import backend.database.db as database_module
 
     connection = __import__("sqlite3").connect(":memory:")
     monkeypatch.setattr(database_module.sqlite3, "connect", lambda path: connection)
@@ -66,7 +66,7 @@ def test_get_connection_enables_foreign_keys(monkeypatch):
 
 
 def test_database_init_script_entrypoint_uses_initializer(database, monkeypatch, capsys):
-    import database.db as database_module
+    import backend.database.db as database_module
 
     monkeypatch.setattr(database_module, "get_connection", database)
     script_path = Path(__file__).resolve().parents[1] / "database" / "init_db.py"

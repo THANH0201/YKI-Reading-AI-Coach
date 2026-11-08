@@ -2,18 +2,18 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from models.article import Article
-from models.feedback import Feedback
-from models.question import Question
-from services.article_service import ArticleService
-from services.exam_service import ExamService
-from services.score_service import ScoreService
-from services.tutor_service import TutorService
+from backend.ai_neural_networks.reading.models.article import Article
+from backend.ai_neural_networks.reading.models.feedback import Feedback
+from backend.ai_neural_networks.reading.models.question import Question
+from backend.ai_neural_networks.reading.services.article_service import ArticleService
+from backend.ai_neural_networks.reading.services.exam_service import ExamService
+from backend.ai_neural_networks.reading.services.score_service import ScoreService
+from backend.ai_neural_networks.reading.services.tutor_service import TutorService
 from streamlit.testing.v1 import AppTest
 
 
 def test_app_renders_home_without_showing_exam_timer(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     calls = []
     monkeypatch.setattr(init_db, "init_db", lambda: calls.append("initialized"))
@@ -36,7 +36,7 @@ def test_app_renders_home_without_showing_exam_timer(monkeypatch):
 
 
 def test_start_exam_shows_article_questions_timer_and_tutor(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     monkeypatch.setattr(init_db, "init_db", lambda: None)
     app_path = Path(__file__).resolve().parents[1] / "app.py"
@@ -119,7 +119,7 @@ def test_start_exam_shows_article_questions_timer_and_tutor(monkeypatch):
 
 
 def test_home_check_level_success_then_start_exam(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     monkeypatch.setattr(init_db, "init_db", lambda: None)
     monkeypatch.setattr(
@@ -166,7 +166,7 @@ def test_home_check_level_success_then_start_exam(monkeypatch):
 
 
 def test_home_check_level_failure_clears_old_exam(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     monkeypatch.setattr(init_db, "init_db", lambda: None)
     monkeypatch.setattr(
@@ -212,7 +212,7 @@ def test_home_check_level_failure_clears_old_exam(monkeypatch):
 
 
 def test_example_exam_button_loads_article_and_questions(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     monkeypatch.setattr(init_db, "init_db", lambda: None)
     monkeypatch.setattr(
@@ -279,7 +279,7 @@ def test_example_exam_button_loads_article_and_questions(monkeypatch):
 
 
 def test_example_exam_reports_when_no_exam_is_available(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     monkeypatch.setattr(init_db, "init_db", lambda: None)
     monkeypatch.setattr(
@@ -302,7 +302,7 @@ def test_example_exam_reports_when_no_exam_is_available(monkeypatch):
 
 
 def test_writing_section_analyzes_and_displays_feedback(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     analysis = {
         "estimated_level": "B2",
@@ -340,7 +340,7 @@ def test_writing_section_analyzes_and_displays_feedback(monkeypatch):
 
 
 def test_listening_and_speaking_sections_are_explicit_placeholders(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     monkeypatch.setattr(init_db, "init_db", lambda: None)
     app_path = Path(__file__).resolve().parents[1] / "app.py"
@@ -362,7 +362,7 @@ def test_listening_and_speaking_sections_are_explicit_placeholders(monkeypatch):
 
 
 def test_exam_submission_renders_saved_score_and_feedback(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     monkeypatch.setattr(init_db, "init_db", lambda: None)
     app_path = Path(__file__).resolve().parents[1] / "app.py"
@@ -438,7 +438,7 @@ def test_exam_submission_renders_saved_score_and_feedback(monkeypatch):
 
 
 def test_timer_expiry_auto_submits_answers_only_once(monkeypatch):
-    from views import exam_page
+    from frontend.pages import exam_page
 
     state = {
         "article_id": 1,
@@ -479,7 +479,7 @@ def test_timer_expiry_auto_submits_answers_only_once(monkeypatch):
 
 
 def test_tutor_send_displays_answer(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     tutor_calls = []
     monkeypatch.setattr(init_db, "init_db", lambda: None)
@@ -522,7 +522,7 @@ def test_tutor_send_displays_answer(monkeypatch):
 
 
 def test_tutor_failure_and_empty_exam_are_shown_in_ui(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     monkeypatch.setattr(init_db, "init_db", lambda: None)
     monkeypatch.setattr(
@@ -552,7 +552,7 @@ def test_tutor_failure_and_empty_exam_are_shown_in_ui(monkeypatch):
 
 
 def test_exam_page_warns_on_unsupported_question_type(monkeypatch):
-    from database import init_db
+    from backend.database import init_db
 
     monkeypatch.setattr(init_db, "init_db", lambda: None)
     app_path = Path(__file__).resolve().parents[1] / "app.py"

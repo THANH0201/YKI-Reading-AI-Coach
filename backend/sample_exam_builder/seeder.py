@@ -4,17 +4,17 @@ import re
 import time
 from typing import Any
 
-from ai.model import ask_qwen
-from models.article import Article
-from models.exam_category import (
+from backend.ai.model import ask_qwen
+from backend.ai_neural_networks.reading.models.article import Article
+from backend.ai_neural_networks.reading.models.exam_category import (
     ARTICLE_QUOTA_PER_CATEGORY,
     EXAM_CATEGORY_RULES
 )
-from repositories.article_ingestion_repository import (
+from backend.repositories.article_ingestion_repository import (
     ArticleIngestionRepository
 )
-from repositories.article_repository import ArticleRepository
-from repositories.question_repository import QuestionRepository
+from backend.repositories.article_repository import ArticleRepository
+from backend.repositories.question_repository import QuestionRepository
 
 logger = logging.getLogger(__name__)
 

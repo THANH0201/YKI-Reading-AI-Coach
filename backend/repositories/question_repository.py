@@ -1,8 +1,8 @@
 import json
 
-from database.db import get_connection
-from models.exam_category import EXAM_CATEGORY_RULES
-from models.question import Question
+from backend.database.db import get_connection
+from backend.ai_neural_networks.reading.models.exam_category import EXAM_CATEGORY_RULES
+from backend.ai_neural_networks.reading.models.question import Question
 
 
 class QuestionRepository:

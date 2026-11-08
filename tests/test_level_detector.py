@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from ai.level_detector import detect_level
+from backend.ai.level_detector import detect_level
 
 
 def test_detect_level_returns_supported_level_and_confidence():

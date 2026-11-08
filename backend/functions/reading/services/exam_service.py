@@ -1,5 +1,5 @@
 from ai.question_generator import generate_questions
-from models.exam_category import EXAM_CATEGORY_RULES
+from backend.skills.reading.models.exam_category import EXAM_CATEGORY_RULES
 from repositories.article_repository import ArticleRepository
 from repositories.question_repository import QuestionRepository
 

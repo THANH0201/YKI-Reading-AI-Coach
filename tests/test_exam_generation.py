@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from ai.question_generator import generate_questions
+from backend.ai.question_generator import generate_questions
 
 
 def _complete_exam():

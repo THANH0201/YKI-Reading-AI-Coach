@@ -2,14 +2,10 @@ import sqlite3
 
 import pytest
 
-from database import db
-from database import init_db as database_init
-from repositories import (
-    article_repository,
-    article_ingestion_repository,
-    exam_result_repository,
-    question_repository,
-    user_answer_repository,
+from backend.database import db
+from backend.database import init_db as database_init
+from backend.repositories import article_ingestion_repository, article_repository, exam_result_repository, question_repository, user_answer_repository
+from backend.repositories import (
     vocabulary_repository,
 )
 

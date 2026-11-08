@@ -4,17 +4,16 @@ from unittest.mock import patch
 
 import pytest
 
-from database import init_db as database_init
-from repositories import (
-    article_ingestion_repository,
-    article_repository,
+from backend.database import init_db as database_init
+from backend.repositories import article_ingestion_repository, article_repository
+from backend.repositories import (
     question_repository
 )
-from repositories.article_ingestion_repository import (
+from backend.repositories.article_ingestion_repository import (
     ArticleIngestionRepository
 )
-from repositories.question_repository import QuestionRepository
-from sample_exam_builder.seeder import (
+from backend.repositories.question_repository import QuestionRepository
+from backend.sample_exam_builder.seeder import (
     _generate_batch,
     _save_generated_article,
     _validate_questions,

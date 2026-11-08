@@ -4,7 +4,7 @@ from ai.question_generator import generate_questions
 
 import json
 
-from models.question import Question
+from backend.skills.reading.models.question import Question
 
 
 class ArticleService:

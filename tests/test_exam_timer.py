@@ -1,6 +1,6 @@
 import pytest
 
-from services.exam_timer_service import (
+from backend.ai_neural_networks.reading.services.exam_timer_service import (
     EXAM_DURATION_SECONDS,
     create_deadline,
     format_remaining,
