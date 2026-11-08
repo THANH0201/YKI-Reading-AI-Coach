@@ -1,13 +1,11 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
 class Question:
+    id: int | None
 
-    id: Optional[int]
-
-    article_id: Optional[int]
+    article_id: int | None
 
     question_no: int
 
@@ -15,16 +13,16 @@ class Question:
 
     question: str
 
-    option_a: Optional[str]
+    option_a: str | None
 
-    option_b: Optional[str]
+    option_b: str | None
 
-    option_c: Optional[str]
+    option_c: str | None
 
-    option_d: Optional[str]
+    option_d: str | None
 
     correct_answer: str
 
-    keywords: Optional[str]
+    keywords: str | None
 
-    explanation: Optional[str]
+    explanation: str | None

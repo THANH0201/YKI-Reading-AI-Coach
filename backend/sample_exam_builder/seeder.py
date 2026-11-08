@@ -4,17 +4,20 @@ import re
 import time
 from typing import Any
 
-from backend.ai.model import ask_qwen
-from backend.ai_neural_networks.reading.models.article import Article
-from backend.ai_neural_networks.reading.models.exam_category import (
+from backend.functions.reading.models.article import Article
+from backend.functions.reading.models.exam_category import (
     ARTICLE_QUOTA_PER_CATEGORY,
-    EXAM_CATEGORY_RULES
+    EXAM_CATEGORY_RULES,
 )
-from backend.repositories.article_ingestion_repository import (
-    ArticleIngestionRepository
+
+from backend.llms.groq_client import ask_groq
+from backend.functions.reading.repositories.article_ingestion_repository import (
+    ArticleIngestionRepository,
 )
-from backend.repositories.article_repository import ArticleRepository
-from backend.repositories.question_repository import QuestionRepository
+from backend.functions.reading.repositories.article_repository import ArticleRepository
+from backend.functions.reading.repositories.question_repository import (
+    QuestionRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +25,7 @@ SEED_SOURCE = "Original AI-generated Finnish practice text"
 SEED_RIGHTS_BASIS = "Original content generated for YKI Reading AI Coach"
 SEED_PERMISSION_REFERENCE = "internal:original-ai-content:v1"
 SEED_APPROVED_BY = "Project owner - original synthetic content"
-SEED_BATCH_SIZES = {
-    "notice": 2,
-    "email": 2,
-    "utiset": 1,
-    "selkouutiset": 1
-}
+SEED_BATCH_SIZES = {"notice": 2, "email": 2, "utiset": 1, "selkouutiset": 1}
 ALLOWED_SUBJECTS = {
     "Everyday life",
     "Society",
@@ -40,7 +38,7 @@ ALLOWED_SUBJECTS = {
     "Economy",
     "Culture",
     "Sports",
-    "Politics"
+    "Politics",
 }
 
 
@@ -56,11 +54,7 @@ def _word_count(content: str) -> int:
     return len(re.findall(r"\b[\w'-]+\b", content, flags=re.UNICODE))
 
 
-def _batch_prompt(
-        category: str,
-        start_number: int,
-        count: int
-) -> str:
+def _batch_prompt(category: str, start_number: int, count: int) -> str:
     rules = EXAM_CATEGORY_RULES[category]
     question_distribution = rules["question_distribution"]
     question_type, question_count = next(iter(question_distribution.items()))
@@ -97,8 +91,7 @@ purpose.
         "word-count rule above; shorter text will be rejected. Keep "
         "questions, model answers, and explanations very concise."
         if rules["min_words"] >= 300
-        else "Keep the text close to the minimum word limit to fit the "
-        "response budget."
+        else "Keep the text close to the minimum word limit to fit the response budget."
     )
     return f"""
 Create {count} completely original Finnish YKI practice texts numbered
@@ -107,8 +100,8 @@ learning materials, not news reports and not copied or adapted from any
 publisher, website, real event, or known article. Do not imitate a named
 publication. Use varied settings and details. Do not mention this prompt.
 
-Category: {rules['label']}.
-Each content field must contain {rules['min_words']}-{rules['max_words']}
+Category: {rules["label"]}.
+Each content field must contain {rules["min_words"]}-{rules["max_words"]}
 Finnish words, counting the text only (not its title or questions).
 {long_text_instruction}
 {level_instruction}
@@ -125,10 +118,7 @@ Markdown or any text outside the JSON object.
 """
 
 
-def _validate_questions(
-        category: str,
-        questions: Any
-) -> list[dict]:
+def _validate_questions(category: str, questions: Any) -> list[dict]:
     if not isinstance(questions, list):
         raise ValueError(f"{category}: questions must be a list.")
     distribution = EXAM_CATEGORY_RULES[category]["question_distribution"]
@@ -144,20 +134,21 @@ def _validate_questions(
             raise ValueError(
                 f"{category}: unsupported question type {question_type!r}."
             )
-        actual_counts[question_type] = (
-            actual_counts.get(question_type, 0) + 1
-        )
-        if not isinstance(question.get("question"), str) or not question[
-            "question"
-        ].strip():
+        actual_counts[question_type] = actual_counts.get(question_type, 0) + 1
+        if (
+            not isinstance(question.get("question"), str)
+            or not question["question"].strip()
+        ):
             raise ValueError(f"{category}: a question is empty.")
-        if not isinstance(question.get("correct_answer"), str) or not question[
-            "correct_answer"
-        ].strip():
+        if (
+            not isinstance(question.get("correct_answer"), str)
+            or not question["correct_answer"].strip()
+        ):
             raise ValueError(f"{category}: a question has no answer key.")
-        if not isinstance(question.get("explanation"), str) or not question[
-            "explanation"
-        ].strip():
+        if (
+            not isinstance(question.get("explanation"), str)
+            or not question["explanation"].strip()
+        ):
             raise ValueError(f"{category}: a question has no explanation.")
 
         if question_type == "multiple_choice":
@@ -165,11 +156,12 @@ def _validate_questions(
             if (
                 not isinstance(options, list)
                 or len(options) != 4
-                or len({option.casefold() for option in options
-                        if isinstance(option, str)}) != 4
+                or len(
+                    {option.casefold() for option in options if isinstance(option, str)}
+                )
+                != 4
                 or not all(
-                    isinstance(option, str) and option.strip()
-                    for option in options
+                    isinstance(option, str) and option.strip() for option in options
                 )
                 or question["correct_answer"] not in options
             ):
@@ -187,8 +179,7 @@ def _validate_questions(
                 not isinstance(keywords, list)
                 or not 3 <= len(keywords) <= 5
                 or not all(
-                    isinstance(keyword, str) and keyword.strip()
-                    for keyword in keywords
+                    isinstance(keyword, str) and keyword.strip() for keyword in keywords
                 )
             ):
                 raise ValueError(f"{category}: invalid open-answer keywords.")
@@ -199,20 +190,15 @@ def _validate_questions(
 
 
 def _request_content(
-        prompt: str,
-        category: str,
-        start_number: int,
-        json_mode: bool = True
+    prompt: str, category: str, start_number: int, json_mode: bool = True
 ) -> str:
     response = None
     for attempt in range(3):
-        response = ask_qwen(
+        response = ask_groq(
             prompt,
             temperature=0.5,
-            response_format=(
-                {"type": "json_object"} if json_mode else None
-            ),
-            max_completion_tokens=950
+            response_format=({"type": "json_object"} if json_mode else None),
+            max_completion_tokens=950,
         )
         if response.get("success"):
             break
@@ -224,8 +210,7 @@ def _request_content(
             break
         if attempt < 2:
             logger.warning(
-                "AI output token limit reached; waiting before retrying %s",
-                category
+                "AI output token limit reached; waiting before retrying %s", category
             )
             time.sleep(65)
     if not response.get("success"):
@@ -241,11 +226,7 @@ def _request_content(
     return content
 
 
-def _request_json(
-        prompt: str,
-        category: str,
-        start_number: int
-) -> dict:
+def _request_json(prompt: str, category: str, start_number: int) -> dict:
     content = _request_content(prompt, category, start_number)
     try:
         response_data = json.loads(_strip_json_fence(content))
@@ -260,10 +241,7 @@ def _request_json(
     return response_data
 
 
-def _generate_long_article(
-        category: str,
-        article_number: int
-) -> dict:
+def _generate_long_article(category: str, article_number: int) -> dict:
     rules = EXAM_CATEGORY_RULES[category]
     level_instruction = f"Use CEFR {rules['target_level']} Finnish."
     content = _request_content(
@@ -271,7 +249,7 @@ def _generate_long_article(
 Create one completely original fictional Finnish YKI practice article.
 It must not be copied or adapted from any publisher, website, real event,
 or known article. Do not imitate a named publication.
-Category: {rules['label']}. {level_instruction}
+Category: {rules["label"]}. {level_instruction}
 Write exactly five paragraphs of about 80-85 words each (about 400 words).
 The article body
 must contain 300-600 Finnish words. Do not include questions, answers, or a
@@ -283,22 +261,26 @@ Then write only the five-paragraph article. Do not use Markdown fences.
 """,
         category,
         article_number,
-        json_mode=False
+        json_mode=False,
     )
     lines = content.strip().splitlines()
-    if len(lines) < 4 or not lines[0].startswith("TITLE: ") or not lines[
-        1
-    ].startswith("SUBJECT: ") or lines[2].strip() != "CONTENT:":
+    if (
+        len(lines) < 4
+        or not lines[0].startswith("TITLE: ")
+        or not lines[1].startswith("SUBJECT: ")
+        or lines[2].strip() != "CONTENT:"
+    ):
         raise ValueError(f"{category}: AI returned an invalid article format.")
     article_data = {
-        "title": lines[0][len("TITLE: "):].strip(),
-        "subject": lines[1][len("SUBJECT: "):].strip(),
-        "content": "\n".join(lines[3:]).strip()
+        "title": lines[0][len("TITLE: ") :].strip(),
+        "subject": lines[1][len("SUBJECT: ") :].strip(),
+        "content": "\n".join(lines[3:]).strip(),
     }
     for field in ("title", "content", "subject"):
-        if not isinstance(article_data.get(field), str) or not article_data[
-            field
-        ].strip():
+        if (
+            not isinstance(article_data.get(field), str)
+            or not article_data[field].strip()
+        ):
             raise ValueError(f"{category}: generated {field} is empty.")
     if article_data["subject"] not in ALLOWED_SUBJECTS:
         raise ValueError(
@@ -311,18 +293,16 @@ Then write only the five-paragraph article. Do not use Markdown fences.
 Continue this original Finnish practice article with one final paragraph.
 Write only the additional paragraph, approximately 70 words, and make it
 continue naturally without repeating existing facts. The completed article
-must contain at least {rules['min_words']} words and no more than
-{rules['max_words']} words.
+must contain at least {rules["min_words"]} words and no more than
+{rules["max_words"]} words.
 Article so far:
-{article_data['content']}
+{article_data["content"]}
 """,
             category,
             article_number,
-            json_mode=False
+            json_mode=False,
         ).strip()
-        article_data["content"] = (
-            f"{article_data['content']}\n\n{continuation}"
-        )
+        article_data["content"] = f"{article_data['content']}\n\n{continuation}"
         words = _word_count(article_data["content"])
     if not rules["min_words"] <= words <= rules["max_words"]:
         raise ValueError(
@@ -339,28 +319,23 @@ factually correct model answer in correct_answer, 3-5 scoring keywords in
 keywords, and an explanation grounded in the article of no more than
 12 words. Keep all questions and answers concise.
 Article:
-{article_data['content']}
+{article_data["content"]}
 Return a JSON object with one field named "questions", containing an array
 of exactly five objects. Each object must have type "open", question,
 correct_answer, explanation, and keywords. Do not include Markdown or text
 outside the JSON object.
 """,
         category,
-        article_number
+        article_number,
     )
     article_data["questions"] = _validate_questions(
-        category,
-        question_data.get("questions")
+        category, question_data.get("questions")
     )
     article_data["number"] = article_number
     return article_data
 
 
-def _generate_batch(
-        category: str,
-        start_number: int,
-        count: int
-) -> list[dict]:
+def _generate_batch(category: str, start_number: int, count: int) -> list[dict]:
     if category in {"utiset", "selkouutiset"}:
         if count != 1:
             raise ValueError(
@@ -372,9 +347,7 @@ def _generate_batch(
     response_data = _request_json(prompt, category, start_number)
     articles = response_data.get("articles")
     if not isinstance(articles, list) or len(articles) != count:
-        raise RuntimeError(
-            f"AI returned the wrong number of {category} texts."
-        )
+        raise RuntimeError(f"AI returned the wrong number of {category} texts.")
 
     rules = EXAM_CATEGORY_RULES[category]
     for offset, article_data in enumerate(articles):
@@ -386,14 +359,14 @@ def _generate_batch(
                 f"{category}: expected generated article {expected_number}."
             )
         for field in ("title", "content", "subject"):
-            if not isinstance(article_data.get(field), str) or not article_data[
-                field
-            ].strip():
+            if (
+                not isinstance(article_data.get(field), str)
+                or not article_data[field].strip()
+            ):
                 raise ValueError(f"{category}: generated {field} is empty.")
         if article_data["subject"] not in ALLOWED_SUBJECTS:
             raise ValueError(
-                f"{category}: unsupported subject "
-                f"{article_data['subject']!r}."
+                f"{category}: unsupported subject {article_data['subject']!r}."
             )
         words = _word_count(article_data["content"])
         if not rules["min_words"] <= words <= rules["max_words"]:
@@ -402,16 +375,13 @@ def _generate_batch(
                 f"expected {rules['min_words']}-{rules['max_words']}."
             )
         article_data["questions"] = _validate_questions(
-            category,
-            article_data.get("questions")
+            category, article_data.get("questions")
         )
     return articles
 
 
 def _generate_batch_with_fallback(
-        category: str,
-        start_number: int,
-        count: int
+    category: str, start_number: int, count: int
 ) -> list[dict]:
     try:
         return _generate_batch(category, start_number, count)
@@ -419,21 +389,12 @@ def _generate_batch_with_fallback(
         if count == 1:
             raise
         smaller_count = count // 2
-        logger.warning(
-            "Retrying invalid %s batch as smaller requests",
-            category
-        )
+        logger.warning("Retrying invalid %s batch as smaller requests", category)
         return [
+            *_generate_batch_with_fallback(category, start_number, smaller_count),
             *_generate_batch_with_fallback(
-                category,
-                start_number,
-                smaller_count
+                category, start_number + smaller_count, count - smaller_count
             ),
-            *_generate_batch_with_fallback(
-                category,
-                start_number + smaller_count,
-                count - smaller_count
-            )
         ]
 
 
@@ -444,23 +405,21 @@ def _save_generated_article(category: str, article_data: dict) -> int:
     article = Article(
         id=None,
         title=article_data["title"].strip(),
-        source=(
-            f"{SEED_SOURCE} ({category} #{article_data['number']})"
-        ),
+        source=(f"{SEED_SOURCE} ({category} #{article_data['number']})"),
         content=content,
         detected_level=level,
         level_confidence=0.7,
         subject=article_data["subject"],
         subject_confidence=0.7,
         word_count=_word_count(content),
-        exam_category=category
+        exam_category=category,
     )
     article_id = ArticleRepository.save_approved_exam_article(
         article,
         rights_basis=SEED_RIGHTS_BASIS,
         permission_reference=SEED_PERMISSION_REFERENCE,
         approved_by=SEED_APPROVED_BY,
-        exam_category=category
+        exam_category=category,
     )
     QuestionRepository.save_all(article_id, article_data["questions"])
     return article_id
@@ -469,24 +428,17 @@ def _save_generated_article(category: str, article_data: dict) -> int:
 def seed_sample_library() -> dict[str, int]:
     seeded = {}
     for category in EXAM_CATEGORY_RULES:
-        remaining = ArticleIngestionRepository.remaining_article_capacity(
-            category
-        )
+        remaining = ArticleIngestionRepository.remaining_article_capacity(category)
         created = 0
         while created < remaining:
-            batch_size = min(
-                SEED_BATCH_SIZES[category],
-                remaining - created
-            )
+            batch_size = min(SEED_BATCH_SIZES[category], remaining - created)
             start_number = (
                 ArticleIngestionRepository.count_approved_articles(category)
                 + created
                 + 1
             )
             generated_articles = _generate_batch_with_fallback(
-                category,
-                start_number,
-                batch_size
+                category, start_number, batch_size
             )
             for article_data in generated_articles:
                 _save_generated_article(category, article_data)
@@ -495,7 +447,7 @@ def seed_sample_library() -> dict[str, int]:
                     "Seeded %s article %s/%s",
                     category,
                     start_number + created - 1,
-                    ARTICLE_QUOTA_PER_CATEGORY
+                    ARTICLE_QUOTA_PER_CATEGORY,
                 )
         seeded[category] = created
     return seeded

@@ -20,7 +20,7 @@ modules:
     source_loc: "ai/model.py:22"
     used_by_units: [streamlit-home, sample-library-seed]
     fields:
-      - {name: ask_qwen, type: "function(prompt, temperature, response_format, max_completion_tokens) -> dict"}
+      - {name: ask_groq, type: "function(prompt, temperature, response_format, max_completion_tokens) -> dict"}
     god_class: false
     split_candidate: true
     migration_strategy: wrap

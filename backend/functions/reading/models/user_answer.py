@@ -1,11 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
 class UserAnswer:
-
-    id: Optional[int]
+    id: int | None
 
     exam_result_id: int
 
@@ -15,4 +13,4 @@ class UserAnswer:
 
     is_correct: bool
 
-    created_at: Optional[str] = None
+    created_at: str | None = None

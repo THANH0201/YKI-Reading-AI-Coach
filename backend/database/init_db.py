@@ -56,28 +56,20 @@ def init_db():
     )
     """)
 
-    article_columns = {
-        row[1]
-        for row in cursor.execute("PRAGMA table_info(articles)")
-    }
+    article_columns = {row[1] for row in cursor.execute("PRAGMA table_info(articles)")}
     for column, definition in (
         ("reuse_approved", "INTEGER NOT NULL DEFAULT 0"),
         ("rights_basis", "TEXT"),
         ("permission_reference", "TEXT"),
         ("reuse_approved_by", "TEXT"),
         ("reuse_approved_at", "TIMESTAMP"),
-        ("exam_category", "TEXT")
+        ("exam_category", "TEXT"),
     ):
         if column not in article_columns:
-            cursor.execute(
-                f"ALTER TABLE articles ADD COLUMN {column} {definition}"
-            )
+            cursor.execute(f"ALTER TABLE articles ADD COLUMN {column} {definition}")
 
     ingestion_source_columns = {
-        row[1]
-        for row in cursor.execute(
-            "PRAGMA table_info(article_ingestion_sources)"
-        )
+        row[1] for row in cursor.execute("PRAGMA table_info(article_ingestion_sources)")
     }
     if "exam_category" not in ingestion_source_columns:
         cursor.execute("""
@@ -239,13 +231,10 @@ def init_db():
     """)
 
     vocabulary_columns = {
-        row[1]
-        for row in cursor.execute("PRAGMA table_info(vocabulary_words)")
+        row[1] for row in cursor.execute("PRAGMA table_info(vocabulary_words)")
     }
     if "meaning" not in vocabulary_columns:
-        cursor.execute(
-            "ALTER TABLE vocabulary_words ADD COLUMN meaning TEXT"
-        )
+        cursor.execute("ALTER TABLE vocabulary_words ADD COLUMN meaning TEXT")
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS vocabulary_word_forms(
@@ -341,9 +330,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-    print(
-        "Database initialized successfully."
-    )
+    print("Database initialized successfully.")
 
 
 if __name__ == "__main__":

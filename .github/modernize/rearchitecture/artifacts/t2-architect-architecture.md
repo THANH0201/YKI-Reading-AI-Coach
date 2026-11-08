@@ -21,7 +21,7 @@ Streamlit browser session
 |---|---|---|
 | `app.py`, `views/` | Streamlit composition and UI rendering; `home_page.py` owns section selection, article entry, exam-library controls, feed ingestion, writing, Listening/Speaking placeholders; `exam_page.py` owns exam/timer/result/tutor UI. | `home_page.py` imports business services, `ai.writing_analyzer`, model constants, `sqlite3`, and `exam_page.py`. `exam_page.py` imports scoring, timer, and tutor services. |
 | `services/` | Reading orchestration, exam/library loading, scoring, feedback, timer, tutor, morphology, feed ingestion. | Services import AI functions, repositories, concrete SQLite errors, Groq/LangChain, and HTTP utilities directly. No ports/DI are present. |
-| `ai/` | Level detection, classification, question generation, writing analysis and provider access. | `ask_qwen` creates an OpenAI SDK client pointed at Groq; separate tutor path constructs LangChain `ChatGroq`. `llm_router.py`, `prompts.py`, and `rag.py` are not imported by the active Python source found in this scan. |
+| `ai/` | Level detection, classification, question generation, writing analysis and provider access. | `ask_groq` creates an OpenAI SDK client pointed at Groq; separate tutor path constructs LangChain `ChatGroq`. `llm_router.py`, `prompts.py`, and `rag.py` are not imported by the active Python source found in this scan. |
 | `repositories/`, `database/` | SQL statements and SQLite connection/schema creation. | Repositories call `database.db.get_connection()` directly. `database.db` opens the relative path `data/yki.db`; repositories independently open/commit/close connections. |
 | `models/` | Dataclass records and exam-category rules. | Both services and repositories import these directly; they are not versioned transport schemas. |
 | `sample_exam_builder/` | CLI-driven generation and saving of approved sample exams. | It shares question-generation, AI and persistence modules with the UI runtime. |
@@ -35,7 +35,7 @@ Dependency direction is not layered consistently: UI -> services/AI/models/SQLit
 - Example library: `ExamService.get_random_exam()` requests one approved article from each of four categories; `ArticleRepository` and `QuestionRepository` read them. `services/exam_service.py` also generates and saves approved articles.
 - Feed ingestion and rights: `views/home_page.py` -> `ArticleIngestionService` -> feed-source repository, level/classification AI and `ExamService`; a feed must carry user-entered license/permission details and an explicit rights confirmation.
 - Tutor: `views/exam_page.py` -> `TutorService`; LangChain agent/tools access vocabulary repository, morphology rules, Groq, and MyMemory. Article text is supplied as current-session context.
-- Writing: `views/home_page.py` -> `ai.writing_analyzer.analyze_writing()` -> `ai.model.ask_qwen()`.
+- Writing: `views/home_page.py` -> `ai.writing_analyzer.analyze_writing()` -> `ai.model.ask_groq()`.
 - Listening/Speaking: sidebar routes display explicit “not available yet” placeholders. There are no implementation functions to port.
 - Sample-library CLI: `sample_exam_builder/__main__.py` -> `seeder.seed_sample_library()` -> AI/repositories and schema initialization.
 - `ScoreService` constructs and returns `Feedback`, but the corresponding AI-feedback rendering in `views/exam_page.py` is commented out. Do not silently expose this as a new UI behavior during the move.

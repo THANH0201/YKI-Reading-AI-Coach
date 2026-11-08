@@ -1,11 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
 class Article:
-
-    id: Optional[int]
+    id: int | None
 
     title: str
 
@@ -23,6 +21,6 @@ class Article:
 
     word_count: int
 
-    created_at: Optional[str] = None
+    created_at: str | None = None
 
-    exam_category: Optional[str] = None
+    exam_category: str | None = None

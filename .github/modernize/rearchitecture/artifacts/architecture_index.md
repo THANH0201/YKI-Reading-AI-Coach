@@ -67,7 +67,7 @@ This guide indexes **current-state discovery units**, not a committed target-uni
   - `units/sample-library-seed/bindings.yaml` — package-module entrypoint.
   - `units/sample-library-seed/unit_decomposition.yaml` — advisory candidates only; `commit: false`.
 - Relevant global rows:
-  - `t2-architect-wire-contracts.yaml`: no row is assigned directly to the CLI; read the Groq-compatible generation contract because the seeder calls `ask_qwen`, not the Tutor, MyMemory or feed-import rows.
+  - `t2-architect-wire-contracts.yaml`: no row is assigned directly to the CLI; read the Groq-compatible generation contract because the seeder calls `ask_groq`, not the Tutor, MyMemory or feed-import rows.
   - `t2-architect-shared-modules.yaml`: rows whose `used_by_units` includes `sample-library-seed`, restricted by its `shared_refs[].used_fields`.
   - `t2-architect-migration-boundary.yaml`: rows governing the seeder and its runtime dependencies.
 - Before completion report: paths read, approved-library persistence behavior, unresolved/deferred work and isolated-database verification evidence.
@@ -100,7 +100,7 @@ This guide indexes **current-state discovery units**, not a committed target-uni
   - `units/sample-library-seed/behavior.yaml` — CLI side effects, validation and SQLite writes.
   - `units/sample-library-seed/bindings.yaml` — package-module entrypoint.
   - `units/sample-library-seed/unit_decomposition.yaml` — advisory split candidates only (`commit: false`).
-- Relevant global rows: `wire_contracts.yaml` has no row assigned directly to this CLI; read the Groq OpenAI-compatible generation row because the seeder calls `ask_qwen`, and do not treat Tutor, MyMemory or feed-import rows as CLI behavior. Read shared modules where `used_by_units` includes `sample-library-seed`; migration boundary rows for seeder/runtime files.
+- Relevant global rows: `wire_contracts.yaml` has no row assigned directly to this CLI; read the Groq OpenAI-compatible generation row because the seeder calls `ask_groq`, and do not treat Tutor, MyMemory or feed-import rows as CLI behavior. Read shared modules where `used_by_units` includes `sample-library-seed`; migration boundary rows for seeder/runtime files.
 - Before completion report: paths read, persisted library semantics, unresolved/deferred work and isolated database/test evidence.
 
 ## Upstream Artifacts Consumed

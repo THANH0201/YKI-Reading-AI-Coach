@@ -56,7 +56,7 @@ units:
       - module: sqlite-connection-and-schema
         used_fields: [get_connection, init_db]
       - module: groq-compatible-text-client
-        used_fields: [ask_qwen]
+        used_fields: [ask_groq]
       - module: reading-ai-functions
         used_fields: [detect_level, classify_subject]
       - module: question-generation
@@ -90,7 +90,7 @@ units:
       - module: sqlite-connection-and-schema
         used_fields: [get_connection, init_db]
       - module: groq-compatible-text-client
-        used_fields: [ask_qwen]
+        used_fields: [ask_groq]
       - module: reading-ai-functions
         used_fields: [detect_level, classify_subject]
       - module: question-generation

@@ -1,9 +1,10 @@
 import logging
 import sqlite3
 
-from backend.database.init_db import init_db
-from backend.ai_neural_networks.reading.models.exam_category import EXAM_CATEGORY_RULES
+from backend.functions.reading.models.exam_category import EXAM_CATEGORY_RULES
+
 from backend.sample_exam_builder.seeder import seed_sample_library
+from backend.database.init_db import init_db
 
 
 def main() -> None:
@@ -16,10 +17,7 @@ def main() -> None:
         )
         raise
     for category, count in seeded.items():
-        print(
-            f"{EXAM_CATEGORY_RULES[category]['label']}: "
-            f"{count} newly created"
-        )
+        print(f"{EXAM_CATEGORY_RULES[category]['label']}: {count} newly created")
 
 
 if __name__ == "__main__":

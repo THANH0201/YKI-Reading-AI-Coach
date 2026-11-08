@@ -1,12 +1,9 @@
-from backend.skills.reading.models.feedback import Feedback
+from backend.functions.reading.models.feedback import Feedback
 
 
 class AIFeedbackService:
-
     @staticmethod
-    def generate_feedback(
-            article_level,
-            score_result):
+    def generate_feedback(article_level, score_result):
 
         score = score_result["score"]
 
@@ -16,124 +13,59 @@ class AIFeedbackService:
         weaknesses = []
 
         question_type_stats = {
-
-            "multiple_choice": {
-                "correct": 0,
-                "wrong": 0
-            },
-
-            "true_false": {
-                "correct": 0,
-                "wrong": 0
-            },
-
-            "open": {
-                "correct": 0,
-                "wrong": 0
-            }
+            "multiple_choice": {"correct": 0, "wrong": 0},
+            "true_false": {"correct": 0, "wrong": 0},
+            "open": {"correct": 0, "wrong": 0},
         }
 
         for detail in details:
-
-            question_type = detail[
-                "question_type"
-            ]
+            question_type = detail["question_type"]
 
             if detail["is_correct"]:
+                strengths.append(
+                    {"question": detail["question"], "type": question_type}
+                )
 
-                strengths.append({
-                    "question":
-                        detail["question"],
-
-                    "type":
-                        question_type
-                })
-
-                question_type_stats[
-                    question_type
-                ]["correct"] += 1
+                question_type_stats[question_type]["correct"] += 1
 
             else:
+                weaknesses.append(
+                    {
+                        "question": detail["question"],
+                        "type": question_type,
+                        "your_answer": detail["user_answer"],
+                        "correct_answer": detail["correct_answer"],
+                    }
+                )
 
-                weaknesses.append({
+                question_type_stats[question_type]["wrong"] += 1
 
-                    "question":
-                        detail["question"],
+        overall_feedback = AIFeedbackService._generate_overall_feedback(score)
 
-                    "type":
-                        question_type,
-
-                    "your_answer":
-                        detail["user_answer"],
-
-                    "correct_answer":
-                        detail[
-                            "correct_answer"
-                        ]
-
-                })
-
-                question_type_stats[
-                    question_type
-                ]["wrong"] += 1
-
-        overall_feedback = (
-            AIFeedbackService
-            ._generate_overall_feedback(
-                score
-            )
+        recommendations = AIFeedbackService._generate_recommendations(
+            question_type_stats
         )
 
-        recommendations = (
-            AIFeedbackService
-            ._generate_recommendations(
-                question_type_stats
-            )
-        )
-
-        next_goal = (
-            AIFeedbackService
-            ._generate_next_goal(
-                score,
-                article_level
-            )
-        )
+        next_goal = AIFeedbackService._generate_next_goal(score, article_level)
 
         return Feedback(
-
-            overall_feedback=
-                overall_feedback,
-
-            reading_level=
-                article_level,
-
-            strengths=
-                strengths,
-
-            weaknesses=
-                weaknesses,
-
-            recommendations=
-                recommendations,
-
-            next_goal=
-                next_goal
+            overall_feedback=overall_feedback,
+            reading_level=article_level,
+            strengths=strengths,
+            weaknesses=weaknesses,
+            recommendations=recommendations,
+            next_goal=next_goal,
         )
 
     @staticmethod
-    def _generate_overall_feedback(
-            score):
+    def _generate_overall_feedback(score):
 
         if score >= 90:
-
             return (
-                "Excellent work. "
-                "You demonstrate strong YKI B1 "
-                "reading comprehension."
+                "Excellent work. You demonstrate strong YKI B1 reading comprehension."
             )
 
         if score >= 80:
-
             return (
                 "Very good performance. "
                 "You understand most details "
@@ -141,7 +73,6 @@ class AIFeedbackService:
             )
 
         if score >= 60:
-
             return (
                 "Good effort. "
                 "Your comprehension is generally "
@@ -150,7 +81,6 @@ class AIFeedbackService:
             )
 
         if score >= 40:
-
             return (
                 "Your understanding is partial. "
                 "Focus on finding key details "
@@ -165,54 +95,34 @@ class AIFeedbackService:
         )
 
     @staticmethod
-    def _generate_recommendations(
-            stats):
+    def _generate_recommendations(stats):
 
         recommendations = []
 
-        if stats["multiple_choice"][
-            "wrong"
-        ] > 0:
-
+        if stats["multiple_choice"]["wrong"] > 0:
             recommendations.append(
-                "Practice identifying main ideas "
-                "and key details in articles."
+                "Practice identifying main ideas and key details in articles."
             )
 
-        if stats["true_false"][
-            "wrong"
-        ] > 0:
-
+        if stats["true_false"]["wrong"] > 0:
             recommendations.append(
-                "Focus on distinguishing facts "
-                "from misleading information."
+                "Focus on distinguishing facts from misleading information."
             )
 
-        if stats["open"][
-            "wrong"
-        ] > 0:
-
-            recommendations.append(
-                "Improve keyword extraction and "
-                "written responses."
-            )
+        if stats["open"]["wrong"] > 0:
+            recommendations.append("Improve keyword extraction and written responses.")
 
         if not recommendations:
-
             recommendations.append(
-                "Continue reading B1 articles "
-                "regularly to maintain your level."
+                "Continue reading B1 articles regularly to maintain your level."
             )
 
         return recommendations
 
     @staticmethod
-    def _generate_next_goal(
-            score,
-            article_level):
+    def _generate_next_goal(score, article_level):
 
         if score >= 90:
-
             return (
                 f"Try a more challenging "
                 f"{article_level} article "
@@ -220,15 +130,6 @@ class AIFeedbackService:
             )
 
         if score >= 70:
+            return f"Complete another {article_level} article to reinforce your skills."
 
-            return (
-                f"Complete another "
-                f"{article_level} article "
-                f"to reinforce your skills."
-            )
-
-        return (
-            "Review the article, learn new "
-            "vocabulary and retake a similar "
-            "exercise."
-        )
+        return "Review the article, learn new vocabulary and retake a similar exercise."

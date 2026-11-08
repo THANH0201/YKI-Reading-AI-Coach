@@ -1,13 +1,11 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
 class ExamResult:
+    id: int | None
 
-    id: Optional[int]
-
-    article_id: Optional[int]
+    article_id: int | None
 
     score: float
 
@@ -15,4 +13,4 @@ class ExamResult:
 
     total_questions: int
 
-    created_at: Optional[str] = None
+    created_at: str | None = None

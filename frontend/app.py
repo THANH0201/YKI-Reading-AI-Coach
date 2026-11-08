@@ -1,14 +1,18 @@
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
 import streamlit as st
 
 from backend.database.init_db import init_db
 from frontend.pages.home_page import render_home
 
-st.set_page_config(
-    page_title="YKI Reading AI Coach",
-    layout="wide"
-)
+st.set_page_config(page_title="YKI Reading AI Coach", layout="wide")
 
-st.markdown("""
+st.markdown(
+    """
 <style>
 :root {
     --yki-blue: #2563eb;
@@ -76,7 +80,9 @@ div[data-testid="stMetric"] {
     padding: 0.75rem;
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 if not st.session_state.get("_database_initialized"):
     init_db()
