@@ -27,7 +27,7 @@ This guide indexes **current-state discovery units**, not a committed target-uni
 - `t2-architect-cross-unit-state.yaml`
   - Who reads: workers defining the new HTTP/session boundary.
   - Use for: state that crosses current unit boundaries, plus the note describing state currently confined to the Streamlit page.
-  - How to consume: filter `flows` by `writer.unit` or `reader.unit`; then read the note for page-local exam/tutor state that must become an explicit target contract.
+  - How to consume: filter `flows` by `writer.unit` or `reader.unit`; then read the note for page-local exam/tutor state that must become an explicit target contract. No separate seam artifact was emitted because no declared or inferred frozen-side cut was found.
 - `t2-architect-architecture.md`
   - Who reads: design and implementation workers.
   - Use for: current dependency direction, runtime shape, feature placement and migration risks.
@@ -36,6 +36,10 @@ This guide indexes **current-state discovery units**, not a committed target-uni
   - Who reads: all workers needing package, runtime/dependency, or persisted-schema context.
   - Use for: current packages and entrypoints, declared dependencies, and SQLite schema/relationships.
   - How to consume: these record the existing system only; do not treat them as target design or permission to access `data/yki.db`.
+- `t2-architect.md`
+  - Who reads: all downstream workers needing a concise discovery summary and deliverable map.
+  - Use for: current findings, upstream traceability, and artifact navigation.
+  - How to consume: use this as a short orientation only; follow the detailed files listed there and in this index.
 - `t2.1-architect.md`
   - Who reads: design and implementation workers.
   - Use for: agreed mitigations for the seven HIGH risks identified by t2.
