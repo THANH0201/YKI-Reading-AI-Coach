@@ -1,0 +1,37 @@
+# ## Upstream Artifacts Consumed
+# - clarification.md and artifacts/t1-teamlead.md — retain Streamlit as the UI but make it HTTP-only.
+# ## Evidence Mapping
+# - app.py, views/home_page.py, views/exam_page.py bindings/config reads → current runtime wiring.
+unit: streamlit-home
+bindings:
+  - type: route-declaration
+    name: "Streamlit script entrypoint app.py"
+    source_loc: "app.py:1"
+    target: "render_home"
+    must_appear_in_target: true
+    notes: "Current root script configures Streamlit, calls init_db, then renders the only page; target web package must instead call its HTTP client."
+  - type: annotation
+    name: "@st.fragment(run_every='1s')"
+    source_loc: "views/exam_page.py:62"
+    target: "render_exam_timer"
+    must_appear_in_target: true
+    notes: "The timer rerenders each second and triggers auto-submit at zero."
+  - type: convention
+    name: "Streamlit session_state"
+    source_loc: "views/home_page.py:39"
+    target: "home/exam/tutor/writing page flow"
+    must_appear_in_target: true
+    notes: "Contains current article/exam/question/answer/timer/tutor/writing state; define explicit request/session contracts when UI becomes remote."
+runtime_config:
+  - key: "GROQ_API_KEY"
+    source_loc: "ai/model.py:20"
+    source: env
+    default_value: "unset leads to provider initialization/request failure"
+    must_appear_in_target: true
+    notes: "Credential is read through environment; never copy it to artifacts/tests or expose it in transport hosts."
+  - key: "SQLite database path"
+    source_loc: "database/db.py:7"
+    source: code
+    default_value: "data/yki.db"
+    must_appear_in_target: true
+    notes: "Current path is relative and hard-coded. The target must support isolated test storage and retain existing user data without modifying it during this analysis."

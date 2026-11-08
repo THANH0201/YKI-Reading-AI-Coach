@@ -1,0 +1,107 @@
+# ## Upstream Artifacts Consumed
+# - clarification.md and artifacts/t1-teamlead.md — shared use-case and adapter requirements.
+# ## Evidence Mapping
+# - Import searches across active source → `used_by_units` and public `fields`.
+modules:
+  - name: sqlite-connection-and-schema
+    kind: store
+    source_loc: "database/db.py:1"
+    used_by_units: [streamlit-home, sample-library-seed]
+    fields:
+      - {name: get_connection, type: "function() -> sqlite3.Connection"}
+      - {name: init_db, type: "function() -> None"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: wrap
+    notes: "Both current entrypoints use the concrete default-path connection/schema code; move behind platform-owned SQLite wiring."
+
+  - name: groq-compatible-text-client
+    kind: utility
+    source_loc: "ai/model.py:22"
+    used_by_units: [streamlit-home, sample-library-seed]
+    fields:
+      - {name: ask_qwen, type: "function(prompt, temperature, response_format, max_completion_tokens) -> dict"}
+    god_class: false
+    split_candidate: true
+    migration_strategy: wrap
+    notes: "Shared general text generation; keep provider setup out of hosts and distinct from tutor tool-agent behavior."
+
+  - name: reading-ai-functions
+    kind: utility
+    source_loc: "ai/level_detector.py:6"
+    used_by_units: [streamlit-home, sample-library-seed]
+    fields:
+      - {name: detect_level, type: "function(article_content) -> dict"}
+      - {name: classify_subject, type: "function(article_content) -> dict"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: extract
+    notes: "The source files are separate; both use the shared text-generation adapter for current reading/library flows."
+
+  - name: question-generation
+    kind: utility
+    source_loc: "ai/question_generator.py:12"
+    used_by_units: [streamlit-home, sample-library-seed]
+    fields:
+      - {name: generate_questions, type: "function(article_content, question_distribution, require_open_answer) -> list"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: extract
+    notes: "Question counts/types and validation are shared by submitted reading, library ingestion and seed generation."
+
+  - name: article-record-and-category-rules
+    kind: dto
+    source_loc: "models/article.py:1"
+    used_by_units: [streamlit-home, sample-library-seed]
+    fields:
+      - {name: Article, type: "dataclass"}
+      - {name: EXAM_CATEGORY_RULES, type: "dict"}
+      - {name: ARTICLE_QUOTA_PER_CATEGORY, type: "int"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: extract
+    notes: "Domain records/rules are imported by UI and seeder code; versioned wire schemas should be distinct from these records."
+
+  - name: question-record
+    kind: dto
+    source_loc: "models/question.py:1"
+    used_by_units: [streamlit-home, sample-library-seed]
+    fields:
+      - {name: Question, type: "dataclass"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: extract
+    notes: "Shared dataclass currently flows between UI, services and seeder; keep domain data separate from versioned transport schemas."
+
+  - name: question-repository
+    kind: store
+    source_loc: "repositories/question_repository.py:8"
+    used_by_units: [streamlit-home, sample-library-seed]
+    fields:
+      - {name: QuestionRepository, type: "class"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: wrap
+    notes: "Question SQL persistence is shared by the UI and seed CLI and must move behind a repository port."
+
+  - name: article-repository
+    kind: store
+    source_loc: "repositories/article_repository.py:1"
+    used_by_units: [streamlit-home, sample-library-seed]
+    fields:
+      - {name: ArticleRepository, type: "class"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: wrap
+    notes: "Persists and selects approved library articles; includes rights checks and SQLite-specific SQL."
+
+  - name: ingestion-source-repository
+    kind: store
+    source_loc: "repositories/article_ingestion_repository.py:1"
+    used_by_units: [streamlit-home, sample-library-seed]
+    fields:
+      - {name: ArticleIngestionRepository, type: "class"}
+    god_class: false
+    split_candidate: false
+    migration_strategy: wrap
+    notes: "Seeder and UI ingestion share source registration/capacity persistence."

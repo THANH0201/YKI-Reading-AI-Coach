@@ -1,0 +1,73 @@
+# ## Upstream Artifacts Consumed
+# - clarification.md and artifacts/t1-teamlead.md — external adapter and protection requirements.
+# ## Evidence Mapping
+# - ai/model.py, services/tutor_service.py, services/article_ingestion_service.py → current external contracts.
+# This repository has no current HTTP REST/MCP API contracts.
+contracts:
+  - name: groq-openai-compatible-chat-completions
+    unit: streamlit-home
+    type: sdk
+    stability: must_preserve
+    source_loc: "ai/model.py:22"
+    contract:
+      method: "OpenAI SDK chat.completions.create"
+      path: "https://api.groq.com/openai/v1"
+      request: "model qwen/qwen3.8-27b; user prompt; temperature; optional response_format and max_completion_tokens"
+      response: "success/content dict; failure returns success=false, content=null, error string"
+      error: "Logged provider/runtime exception is returned as error data; task services convert failures into feature-specific messages."
+      auth: "GROQ_API_KEY supplied through runtime environment configuration."
+    target_contract:
+      method: "Groq infrastructure adapter exposes application-owned text-generation operations and maps provider failures to the existing result/error semantics."
+      notes: "Keep SDK/client and credentials out of web/API/MCP hosts; retain JSON response-mode support used by writing analysis."
+    semantic_divergence: []
+
+  - name: tutor-groq-agent
+    unit: streamlit-home
+    type: sdk
+    stability: must_preserve
+    source_loc: "services/tutor_service.py:781"
+    contract:
+      method: "LangChain create_agent with ChatGroq"
+      path: "Groq chat model qwen/qwen3.8-27b"
+      request: "Tutor system instructions, learner message, current article context and registered tool definitions"
+      response: "Final assistant message; tool failures/rate limits map to stable user-facing tutor errors."
+      error: "RateLimitError, GroqError, GraphRecursionError and invalid/empty model response have distinct handling."
+      auth: "GROQ_API_KEY supplied through runtime environment configuration."
+    target_contract:
+      method: "Tutor application use case invokes a provider adapter with bounded tool execution and retains existing article-context, vocabulary-save and provider-error semantics."
+      notes: "Do not replace tool-backed tutor behavior with a plain text completion or let the MCP adapter implement its own tutor logic."
+    semantic_divergence: []
+
+  - name: mymemory-finnish-english-translation
+    unit: streamlit-home
+    type: rest
+    stability: must_preserve
+    source_loc: "services/tutor_service.py:206"
+    contract:
+      method: "GET"
+      path: "https://api.mymemory.translated.net/get?q={phrase}&langpair=fi|en"
+      request: "Only the requested Finnish phrase is sent; URL-encoded q and fi|en language pair; 8 second timeout."
+      response: "JSON responseData.translatedText; successful translation is cached with provider MyMemory."
+      error: "Network/timeout/invalid JSON, invalid response, empty translation or cache error return a tutor-tool error."
+      auth: "None found in source."
+    target_contract:
+      method: "Tutor infrastructure translation adapter preserves the phrase-only request, response validation, timeout and successful-cache semantics."
+      notes: "Never send the current article text to this provider."
+    semantic_divergence: []
+
+  - name: user-approved-rss-atom-import
+    unit: streamlit-home
+    type: rest
+    stability: must_preserve
+    source_loc: "services/article_ingestion_service.py:68"
+    contract:
+      method: "GET"
+      path: "User-registered HTTP(S) feed URL"
+      request: "URL must resolve only to public IP addresses; redirects disabled; 12-second timeout; 2 MB response limit; at most 20 entries."
+      response: "RSS/Atom entries with title/link/content are normalized and filtered for eligibility, duplicate URLs and category capacity."
+      error: "Invalid URL, DNS/private address, fetch/parse, size or persistence failures are surfaced to the UI; per-entry rejects are reported as skipped/failed."
+      auth: "No network authentication contract found in source; human-entered license/permission evidence and explicit confirmation are required by the app."
+    target_contract:
+      method: "Exam-library application use case calls an isolated feed-fetch adapter after validating approval metadata and applies the same public-host, redirect, size, timeout and entry limits."
+      notes: "The future API/MCP exposure must apply the rights policy in shared use-case/policy code, not only in Streamlit widgets."
+    semantic_divergence: []

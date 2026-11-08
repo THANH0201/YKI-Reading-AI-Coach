@@ -1,0 +1,75 @@
+# ## Upstream Artifacts Consumed
+# - clarification.md — preserve existing behavior and data-scope rules.
+# - artifacts/t1-teamlead.md — rights/consent and disabled-feature invariants.
+# ## Evidence Mapping
+# - views/home_page.py and views/exam_page.py user actions → observable branches/side effects below.
+unit: streamlit-home
+side_effects:
+  - source_loc: "app.py:81-84"
+    effect: "Initializes the SQLite schema once per Streamlit session; schema setup can create tables/indexes or add columns and commits."
+    must_preserve: true
+  - source_loc: "views/home_page.py:64-123"
+    effect: "Sends user-entered reading content to the configured AI provider for level, subject and question generation, but keeps submitted text/results in Streamlit session state rather than the approved sample library."
+    must_preserve: true
+  - source_loc: "views/home_page.py:187-237"
+    effect: "Loads a randomly selected approved exam and its article/question records into the current session."
+    must_preserve: true
+  - source_loc: "views/exam_page.py:36-59"
+    effect: "Grades submitted/expired answers; persists result and answer records only when the article and all questions are persisted."
+    must_preserve: true
+  - source_loc: "views/home_page.py:320-465"
+    effect: "Registers and fetches user-approved feeds, analyzes eligible entries, generates questions and saves approved library content with rights provenance."
+    must_preserve: true
+  - source_loc: "views/exam_page.py:354-377"
+    effect: "Invokes Tutor with current article context and stores its result in Streamlit session state; tutor vocabulary/translation cache may be persisted."
+    must_preserve: true
+  - source_loc: "views/home_page.py:268-271"
+    effect: "Sends submitted writing to AI analysis and stores the result in the current session."
+    must_preserve: true
+branches:
+  - source_loc: "services/article_service.py:13-88"
+    condition: "Empty/non-text input; unavailable/unsupported level; unavailable subject; or invalid/empty generated questions."
+    behavior: "Return feature-specific failure without starting an exam; only B1/B2/C1 content proceeds."
+    must_preserve: true
+  - source_loc: "services/article_service.py:22-89"
+    condition: "The AI returns a supported level, subject, and valid questions."
+    behavior: "Return question dataclasses and level/subject; UI stores values in session and requires an explicit Start Exam action."
+    must_preserve: true
+  - source_loc: "repositories/article_repository.py:112-166"
+    condition: "Random example candidate must be rights-approved and have the exact configured category/question distribution and target level when specified."
+    behavior: "Return an eligible article or no article; the example exam requires an article for each of four configured categories."
+    must_preserve: true
+  - source_loc: "services/article_ingestion_service.py:177-247"
+    condition: "Feed entry duplicate, category quota full, eligibility/word-count/level mismatch, or AI generation failure."
+    behavior: "Report skipped/failed entries; import only eligible entries with generated questions and stored approval provenance."
+    must_preserve: true
+  - source_loc: "views/home_page.py:315-318"
+    condition: "Listening or Speaking section selected."
+    behavior: "Show an explicit not-available placeholder; do not imply a functioning practice flow."
+    must_preserve: true
+  - source_loc: "views/home_page.py:254-313"
+    condition: "Writing is empty, model call fails, response is invalid, or text changes after analysis."
+    behavior: "Show a friendly failure or only render results for the same text; mark estimate as non-official practice feedback."
+    must_preserve: true
+  - source_loc: "views/exam_page.py:63-82"
+    condition: "Exam deadline reaches zero."
+    behavior: "Auto-submit current answers once, set auto-submitted state, stop active exam and rerun UI."
+    must_preserve: true
+error_paths:
+  - source_loc: "views/home_page.py:320-465"
+    trigger: "Invalid feed URL, fetch/parse failure, database issue or rights validation failure."
+    outcome: "Show the error to the operator; do not import the rejected feed/article."
+    contract: "Streamlit-visible error/skip status; exact displayed message is feature-specific."
+    must_preserve: true
+  - source_loc: "services/tutor_service.py:808-945"
+    trigger: "Provider rate limit/error, recursion limit, invalid/empty agent response or vocabulary database error."
+    outcome: "Return a stable user-facing failure; preserve cache-save warning when answer generation succeeded but analysis save did not."
+    contract: "Result dict with success plus answer or message."
+    must_preserve: true
+concurrency:
+  model: sync
+  tx_boundary:
+    source_loc: "repositories/article_repository.py:52-100"
+    scope: "BEGIN IMMEDIATE protects the approved-category quota check and article insert; generated questions are persisted separately by QuestionRepository."
+    isolation: "SQLite connection defaults; foreign keys are enabled."
+    must_preserve: true

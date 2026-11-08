@@ -1,0 +1,54 @@
+project:
+  scope_path: "."
+  loc: 8131
+  languages: [Python]
+  git: true
+  structure:
+    ai: "AI and LLM integration"
+    data: "Application data (user data must remain untouched)"
+    database: "Persistence layer"
+    docs: "Documentation"
+    models: "Domain/data models"
+    prompts: "LLM prompts"
+    repositories: "Persistence repositories"
+    sample_exam_builder: "Exam library and ingestion"
+    services: "Application/business services"
+    tests: "Automated tests"
+    views: "Streamlit UI"
+  notes: "Python/Streamlit YKI Reading AI Coach, approximately 8,131 nonblank Python lines. Repository contains pre-existing uncommitted user work; preserve all existing changes. Never inspect or modify .env or user data such as data/yki.db. Clarification artifact recorded the explicit architecture choices and four downstream blockers (exact Streamlit/FastAPI versions, UI component approach, visual reference); the user directed proceeding without further questions."
+
+assessment:
+  change_type: rewrite
+  rationale: |
+    The request is a full structural rearchitecture from the current Python/Streamlit
+    application to a separated Streamlit frontend, FastAPI REST/BFF, and MCP
+    Streamable HTTP service with shared application use cases and stable contracts.
+    The existing product behavior must be retained while introducing modular
+    boundaries and disabled identity/billing extension points.
+  transformations:
+    - fromStack: "Python Streamlit application"
+      fromStackVersion: null
+      toStack: "Python modular backend with Streamlit web, FastAPI REST/BFF, and MCP Streamable HTTP"
+      toStackVersion: "User-specified architecture; exact package/API versions to verify from official package metadata"
+  grouping_needed: false
+  deep_planning: undecided
+
+progress_sync:
+  run_id: "6ebef4c0-0574-4c10-83be-858cc6795f43"
+  grouping_mode: none
+  execution_mode: null
+  plan_start_time: "2026-11-08T14:00:16Z"
+  plan_completed_time: null
+  execution_start_time: null
+  execution_completed_time: null
+  validation_start_time: null
+  validation_completed_time: null
+  total_phases: 6
+  completed_phases: 1
+  total_modules: 13
+  completed_modules: 0
+  total_tasks: 9
+  completed_tasks: 3
+  total_commits: 0
+  build_verified: false
+  test_verified: false

@@ -1,0 +1,129 @@
+# ## Upstream Artifacts Consumed
+# - clarification.md — user-specified target and no-data-touch constraint.
+# - artifacts/t1-teamlead.md — behavior-preserving rewrite and runnable-increments requirement.
+# ## Evidence Mapping
+# - Current app/page imports + source entrypoints → runtime_reachable/must_rewrite.
+# - User-required apps, packages, modules and adapters → scope reasons.
+user_intent:
+  raw_request: "Execute the requested full structural rearchitecture: retain Streamlit; add FastAPI and MCP Streamable HTTP; move/refactor all existing capabilities behind shared use cases and explicit module/adapter boundaries; preserve behavior."
+  inferred_acceptance:
+    - "Streamlit remains a client-only UI using HTTP for application operations."
+    - "FastAPI REST/BFF and MCP Streamable HTTP invoke shared application use cases."
+    - "Reading, writing, tutor, example exam/library, feed ingestion, scoring and timer behavior remain available."
+    - "Identity/billing are disabled extension points; Listening/Speaking remain clear placeholders."
+    - "The app remains locally runnable without touching existing user data."
+  cleanup_required: false
+strategy: phased
+runtime_reachable:
+  - app.py
+  - views/home_page.py
+  - views/exam_page.py
+  - ai/model.py
+  - ai/level_detector.py
+  - ai/subject_classifier.py
+  - ai/question_generator.py
+  - ai/writing_analyzer.py
+  - services/article_service.py
+  - services/exam_service.py
+  - services/score_service.py
+  - services/ai_feedback_service.py
+  - services/exam_timer_service.py
+  - services/article_ingestion_service.py
+  - services/tutor_service.py
+  - services/finnish_morphology_service.py
+  - database/db.py
+  - database/init_db.py
+  - repositories/article_repository.py
+  - repositories/article_ingestion_repository.py
+  - repositories/question_repository.py
+  - repositories/exam_result_repository.py
+  - repositories/user_answer_repository.py
+  - repositories/vocabulary_repository.py
+  - models/article.py
+  - models/exam_category.py
+  - models/question.py
+  - models/exam_result.py
+  - models/user_answer.py
+  - models/feedback.py
+  - sample_exam_builder/__main__.py
+  - sample_exam_builder/seeder.py
+must_rewrite:
+  - path: app.py
+    reason: "Current Streamlit entrypoint initializes persistence and imports the UI directly; the migrated frontend must be an HTTP-only client."
+  - path: views/home_page.py
+    reason: "Contains the feature/navigation entrypoint and direct service/AI/model/SQLite imports that violate the target frontend boundary."
+  - path: views/exam_page.py
+    reason: "Contains timer, exam, results and tutor UI; it currently calls business services directly and stores lifecycle state only in Streamlit."
+  - path: services/article_service.py
+    reason: "Reading orchestration must become a module-owned use case shared by REST and MCP."
+  - path: services/exam_service.py
+    reason: "Example-exam selection and approved-article creation must become exam-library application use cases."
+  - path: services/score_service.py
+    reason: "Exam scoring and conditional result persistence must be module-owned and shared by transports."
+  - path: services/ai_feedback_service.py
+    reason: "Score feedback is part of the current exam-result behavior."
+  - path: services/exam_timer_service.py
+    reason: "The 30-minute deadline and remaining-time semantics are part of exam behavior."
+  - path: services/article_ingestion_service.py
+    reason: "Feed validation, rights/eligibility and ingestion behavior must be owned by exam-library."
+  - path: services/tutor_service.py
+    reason: "Tutor use case currently combines business behavior, provider, SQLite and translation calls."
+  - path: services/finnish_morphology_service.py
+    reason: "Deterministic Finnish word-form logic is actively used by Tutor and must move with behavior tests."
+  - path: ai/model.py
+    reason: "Provider-specific Groq/OpenAI SDK initialization must move behind the requested infrastructure adapter."
+  - path: database/db.py
+    reason: "Concrete relative-path SQLite connection must move behind platform-owned infrastructure/configuration."
+  - path: database/init_db.py
+    reason: "Schema initialization and additive upgrades must move to SQLite infrastructure and use only configured storage."
+  - path: repositories/article_repository.py
+    reason: "Approved-library persistence/selection must move behind exam-library-owned repository ports."
+  - path: repositories/article_ingestion_repository.py
+    reason: "Feed registry persistence must move behind exam-library-owned repository ports."
+  - path: repositories/question_repository.py
+    reason: "Question persistence must move behind module-owned repository ports."
+  - path: repositories/exam_result_repository.py
+    reason: "Exam-result persistence must move behind the exam application boundary."
+  - path: repositories/user_answer_repository.py
+    reason: "Answer persistence must move behind the exam application boundary."
+  - path: repositories/vocabulary_repository.py
+    reason: "Tutor vocabulary/translation persistence must move behind tutor-owned repository ports."
+  - path: models/article.py
+    reason: "Article domain data must be placed under exam-library, distinct from wire contracts."
+  - path: models/exam_category.py
+    reason: "Category/question-distribution and quota rules are exam-library behavior."
+  - path: models/question.py
+    reason: "Question records belong with reading/exam-library behavior, not a transport host."
+  - path: models/exam_result.py
+    reason: "Exam-result domain record belongs with exam use cases."
+  - path: models/user_answer.py
+    reason: "Answer domain record belongs with exam use cases."
+  - path: models/feedback.py
+    reason: "Exam feedback record belongs with exam behavior."
+  - path: ai/level_detector.py
+    reason: "Reading and library-generation behavior uses the function; preserve provider error and result handling in the reading use case."
+  - path: ai/subject_classifier.py
+    reason: "Reading and library-generation behavior uses the function; preserve result validation."
+  - path: ai/question_generator.py
+    reason: "Reading, ingestion/library generation and CLI share question-generation semantics."
+  - path: ai/writing_analyzer.py
+    reason: "Writing capability must be owned by the writing module and use the Groq adapter."
+  - path: sample_exam_builder/__main__.py
+    reason: "CLI composition must be relocated or reduced to a compatibility shim for exam-library."
+  - path: sample_exam_builder/seeder.py
+    reason: "Seed generation and library writes must be owned by exam-library and use the shared application/infrastructure path."
+copy_as_is: []
+legacy_allowed_to_remain:
+  - "ai/llm_router.py — no active imports found in the current Python source scan."
+  - "ai/prompts.py — no active imports found in the current Python source scan."
+  - "ai/rag.py — no active imports found in the current Python source scan."
+  - "Existing test files and documentation remain unless their owners explicitly update them; tests are not runtime modules."
+defer_cleanup:
+  - "Remove or repurpose unused legacy AI modules only after confirming no external/untracked caller depends on them."
+  - "Retire old source paths only after their replacements are runnable and parity checks pass; preserve pre-existing dirty changes."
+full_rewrite_reason: null
+implementation_rule: >
+  Source anchors establish current behavior but are not a file-by-file move order.
+  Complete migration slices from the runtime boundary while keeping the app
+  runnable. Preserve the current source and database; do not touch data/yki.db.
+  The target hosts are thin adapters and must use shared application use cases.

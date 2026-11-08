@@ -1,0 +1,14 @@
+# ## Upstream Artifacts Consumed
+# - clarification.md — retain the library capability and protect user data.
+# - artifacts/t1-teamlead.md — no secrets/data mutation beyond approved behavior.
+# ## Evidence Mapping
+# - sample_exam_builder/__main__.py → Python package-module command binding.
+unit: sample-library-seed
+bindings:
+  - type: convention
+    name: "python -m sample_exam_builder"
+    source_loc: "sample_exam_builder/__main__.py:25"
+    target: "main"
+    must_appear_in_target: true
+    notes: "Current module CLI initializes the DB and invokes the sample-library seeder."
+runtime_config: []

@@ -1,0 +1,31 @@
+# ## Upstream Artifacts Consumed
+# - clarification.md and artifacts/t1-teamlead.md — fixed target features and boundaries.
+# ## Evidence Mapping
+# - Single page-level trigger and source slices → advisory split candidates only.
+unit: streamlit-home
+commit: false
+candidate_splits:
+  - id: "views/home_page.py:64-184"
+    drivers: [concern_split, reuse_split]
+    rationale: "Reading analysis and exam-start UI share one Streamlit file but call reusable reading-generation behavior that must be exposed through REST and MCP use cases."
+    source_slice: {file: "views/home_page.py", lines: [64, 184]}
+  - id: "views/home_page.py:187-253"
+    drivers: [concern_split, data_ownership_split]
+    rationale: "Selecting a rights-approved example exam and storing its multi-article state differs from transient user-submitted reading and must preserve library eligibility."
+    source_slice: {file: "views/home_page.py", lines: [187, 253]}
+  - id: "views/home_page.py:254-313"
+    drivers: [concern_split, reuse_split]
+    rationale: "Writing analysis is an independent learner action with its own input, model validation and non-official estimate semantics."
+    source_slice: {file: "views/home_page.py", lines: [254, 313]}
+  - id: "views/home_page.py:320-465"
+    drivers: [concern_split, data_ownership_split, nfr_split]
+    rationale: "Licensed-feed registration and ingestion carry rights checks, public-network constraints, quotas, deduplication and persistence not present in normal reading."
+    source_slice: {file: "views/home_page.py", lines: [320, 465]}
+  - id: "views/exam_page.py:36-228"
+    drivers: [concern_split, execution_model_split]
+    rationale: "Exam lifecycle combines synchronous answer grading/persistence with one-second fragment refresh and auto-submit timeout behavior."
+    source_slice: {file: "views/exam_page.py", lines: [36, 228]}
+  - id: "views/exam_page.py:313-377"
+    drivers: [concern_split, reuse_split]
+    rationale: "Tutor has tool-using provider orchestration, context handling and vocabulary persistence that should be a standalone application use case."
+    source_slice: {file: "views/exam_page.py", lines: [313, 377]}

@@ -1,0 +1,107 @@
+# Existing runtime units discovered from the current source, not target routes.
+# ## Upstream Artifacts Consumed
+# - clarification.md — target intent and safety constraints.
+# - artifacts/t1-teamlead.md — behavior/boundary invariants.
+# ## Evidence Mapping
+# - app.py + views/* + sample_exam_builder/__main__.py → the two current external triggers below.
+# - Cross-package imports → depends_on/shared_refs.
+units:
+  - name: streamlit-home
+    trigger: page
+    trigger_detail: "Streamlit script app.py; one stateful UI page with Reading, Writing, Tutor, example exam, feed ingestion, Listening/Speaking placeholders, exam timer and result interactions."
+    source_anchors:
+      - path: app.py
+        line: 1
+      - path: views/home_page.py
+        line: 466
+      - path: views/exam_page.py
+        line: 86
+      - path: services/article_service.py
+        line: 10
+      - path: services/exam_service.py
+        line: 6
+      - path: services/score_service.py
+        line: 20
+      - path: services/ai_feedback_service.py
+        line: 4
+      - path: services/exam_timer_service.py
+        line: 8
+      - path: services/article_ingestion_service.py
+        line: 174
+      - path: services/tutor_service.py
+        line: 808
+      - path: services/finnish_morphology_service.py
+        line: 581
+      - path: ai/writing_analyzer.py
+        line: 6
+      - path: repositories/exam_result_repository.py
+        line: 4
+      - path: repositories/user_answer_repository.py
+        line: 3
+      - path: repositories/vocabulary_repository.py
+        line: 6
+      - path: models/exam_result.py
+        line: 1
+      - path: models/user_answer.py
+        line: 1
+      - path: models/feedback.py
+        line: 1
+    exported_signature: []
+    dynamic_entrypoints:
+      - target: views.exam_page.render_exam_timer
+        mechanism: annotation
+        source_loc: "views/exam_page.py:62"
+    depends_on: []
+    shared_refs:
+      - module: sqlite-connection-and-schema
+        used_fields: [get_connection, init_db]
+      - module: groq-compatible-text-client
+        used_fields: [ask_qwen]
+      - module: reading-ai-functions
+        used_fields: [detect_level, classify_subject]
+      - module: question-generation
+        used_fields: [generate_questions]
+      - module: article-record-and-category-rules
+        used_fields: [Article, EXAM_CATEGORY_RULES, ARTICLE_QUOTA_PER_CATEGORY]
+      - module: question-record
+        used_fields: [Question]
+      - module: question-repository
+        used_fields: [QuestionRepository]
+      - module: article-repository
+        used_fields: [ArticleRepository]
+      - module: ingestion-source-repository
+        used_fields: [ArticleIngestionRepository]
+
+  - name: sample-library-seed
+    trigger: cli
+    trigger_detail: "python -m sample_exam_builder; initializes the schema then generates/populates the approved sample-exam library."
+    source_anchors:
+      - path: sample_exam_builder/__main__.py
+        line: 9
+      - path: sample_exam_builder/seeder.py
+        line: 469
+    exported_signature: []
+    dynamic_entrypoints:
+      - target: sample_exam_builder.__main__.main
+        mechanism: convention
+        source_loc: "sample_exam_builder/__main__.py:25"
+    depends_on: []
+    shared_refs:
+      - module: sqlite-connection-and-schema
+        used_fields: [get_connection, init_db]
+      - module: groq-compatible-text-client
+        used_fields: [ask_qwen]
+      - module: reading-ai-functions
+        used_fields: [detect_level, classify_subject]
+      - module: question-generation
+        used_fields: [generate_questions]
+      - module: article-record-and-category-rules
+        used_fields: [Article, EXAM_CATEGORY_RULES, ARTICLE_QUOTA_PER_CATEGORY]
+      - module: question-record
+        used_fields: [Question]
+      - module: question-repository
+        used_fields: [QuestionRepository]
+      - module: article-repository
+        used_fields: [ArticleRepository]
+      - module: ingestion-source-repository
+        used_fields: [ArticleIngestionRepository]

@@ -1,0 +1,525 @@
+{
+  "schema": "clarification-questions/v1",
+  "generated_at": "2026-11-08T14:01:17Z",
+  "user_input": "Execute the user's requested full structural rearchitecture in the current repository. Fixed choices: keep Streamlit as frontend; add separate FastAPI backend; provide MCP over Streamable HTTP; migrate all current functionality preserving behavior. Make folders/README explain technologies and runtime flow. Design future identity/auth, billing, and additional modules without modifying unrelated modules. Target: apps/web (Streamlit UI and HTTP API client only), apps/api (FastAPI REST/BFF), apps/mcp-server (MCP server / Streamable HTTP tools), packages/contracts (versioned request/response schemas), backend/modules/{reading,writing,tutor,exam_library,identity,billing} with extensible module entrypoints and explicit api/application/domain/infrastructure boundaries where justified; backend/platform for dependency wiring/policies/events; infrastructure adapters for SQLite and external Groq LLM. Both REST and MCP adapters call same application use cases; host must not import repositories/database/LLM/business modules directly. Keep Streamlit frontend functionally equivalent and use stable contracts. Preserve legal/consent behavior and all current features (reading analysis, exam sample library/ingestion, timer/scoring, tutor, writing analysis). Do not build fake Listening/Speaking functions; retain clear placeholders if present. Identity/billing disabled extension points only, not pretend auth/payment is functional. User explicitly requests implementation, tests, dependencies, README, migration that keeps app runnable, no legacy imports unless shims needed. Do not read/copy/print/edit `.env`; do not modify `data/yki.db` or other user data. Preserve preexisting uncommitted changes, no commits, no destructive git operations. Baseline 123 passed, 2 unrelated failures: tests/test_article_ingestion.py::test_crawl_imports_eligible_full_text_and_skips_duplicate and tests/test_tutor.py::test_tutor_saves_lemma_and_inflection_from_grammar_answer. User wants exact report of files/modules moved/created, runtime flow, tests and risks.",
+  "title": "Streamlit YKI Coach Rearchitecture",
+  "assessment_snapshot": {
+    "intro": "The supplied project profile describes a Python/Streamlit YKI Reading AI Coach with:",
+    "bullets": [
+      "Approximately 8,131 nonblank Python lines.",
+      "Existing folders for AI/LLM integration, SQLite persistence, models, repositories, services, exam ingestion, tests, and Streamlit views.",
+      "The requested target separates Streamlit UI, FastAPI REST/BFF, MCP Streamable HTTP, shared contracts, modular backend use cases, and infrastructure adapters.",
+      "The profile warns that pre-existing user changes and application data must be preserved; no source inspection was performed for this clarification gate."
+    ]
+  },
+  "proposed_outcome": "Rearchitect the application in the current repository with Streamlit retained as an HTTP-client-only frontend, a separate FastAPI REST/BFF and MCP Streamable HTTP server sharing application use cases through versioned contracts, modular domain boundaries and SQLite/Groq adapters, while preserving all current behaviors, legal/consent handling, runnability, and the explicit data, environment, and git constraints. Identity and billing remain disabled extension points, not functioning features.",
+  "scope": [
+    "frontend",
+    "backend",
+    "generic"
+  ],
+  "status": "awaiting_answers",
+  "questions": [
+    {
+      "id": "F1",
+      "kit": "frontend",
+      "field": "target.framework",
+      "title": "Streamlit Version",
+      "question": "You fixed Streamlit as the frontend. Which exact version policy should the rearchitecture use: retain the version currently pinned by the project, or specify another target version?",
+      "importance": "required",
+      "impact": 4,
+      "recommended": "Streamlit; retain the currently pinned version and verify it during implementation",
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "Streamlit; retain the currently pinned version and verify it during implementation",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Streamlit; retain the currently pinned version and verify it during implementation",
+          "label": "Retain the currently pinned Streamlit version (verify during implementation)"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F2",
+      "kit": "frontend",
+      "field": "target.component_library",
+      "title": "UI Components",
+      "question": "Which component approach should the Streamlit UI use? For example, keep native Streamlit widgets and components, or name a specific external component library.",
+      "importance": "required",
+      "impact": 4,
+      "recommended": "Use native Streamlit widgets and existing components; add no new UI library",
+      "default": null,
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Use native Streamlit widgets and existing components; add no new UI library",
+          "label": "Native Streamlit widgets and existing components; no new library"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F3",
+      "kit": "frontend",
+      "field": "visual.screenshots",
+      "title": "Current UI References",
+      "question": "Provide paths to screenshots, a screen recording, or a staging URL for the current Streamlit UI. If none are available, say so.",
+      "importance": "required",
+      "impact": 4,
+      "recommended": null,
+      "default": null,
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    },
+    {
+      "id": "F4",
+      "kit": "frontend",
+      "field": "visual.design_system",
+      "title": "Design System",
+      "question": "Should the rearchitecture match the existing UI as closely as possible, or should it use another design system or tokens source? Provide a link/path if applicable.",
+      "importance": "required",
+      "impact": 4,
+      "recommended": null,
+      "default": "match existing pixel-by-pixel using extracted CSS custom properties",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    },
+    {
+      "id": "F5",
+      "kit": "frontend",
+      "field": "compliance.accessibility",
+      "title": "Accessibility Target",
+      "question": "Which accessibility standard should the UI target?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "WCAG 2.1 AA",
+      "default": "WCAG 2.1 AA",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "WCAG 2.1 AA",
+          "label": "WCAG 2.1 AA"
+        },
+        {
+          "value": "WCAG 2.2 AA",
+          "label": "WCAG 2.2 AA"
+        },
+        {
+          "value": "None / not required",
+          "label": "None / not required"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F6",
+      "kit": "frontend",
+      "field": "compatibility.browsers",
+      "title": "Browser Targets",
+      "question": "Which browser/runtime targets should be supported?",
+      "importance": "recommended",
+      "impact": 2,
+      "recommended": "modern evergreen (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+      "default": "modern evergreen (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "modern evergreen (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+          "label": "Modern evergreen browsers (latest 2 major versions)"
+        },
+        {
+          "value": "Other",
+          "label": "Other browser/runtime targets"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F7",
+      "kit": "frontend",
+      "field": "responsive.breakpoints",
+      "title": "Responsive Strategy",
+      "question": "What responsive/adaptive strategy should the retained Streamlit UI follow?",
+      "importance": "recommended",
+      "impact": 2,
+      "recommended": "mobile-first using existing breakpoints detected from codebase",
+      "default": "mobile-first using existing breakpoints detected from codebase",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "mobile-first using existing breakpoints detected from codebase",
+          "label": "Mobile-first, preserve existing breakpoints"
+        },
+        {
+          "value": "desktop-only",
+          "label": "Desktop-only"
+        },
+        {
+          "value": "match current layout exactly",
+          "label": "Match current layout exactly"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F8",
+      "kit": "frontend",
+      "field": "i18n.locales",
+      "title": "Locales",
+      "question": "Which locales are in scope for the UI?",
+      "importance": "optional",
+      "impact": 1,
+      "recommended": "preserve current locales; keep existing i18n library if present",
+      "default": "preserve current locales; keep existing i18n library if present",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "preserve current locales; keep existing i18n library if present",
+          "label": "Preserve current locales and existing i18n approach, if present"
+        },
+        {
+          "value": "none",
+          "label": "No internationalization requirement"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F9",
+      "kit": "frontend",
+      "field": "state_mgmt.preference",
+      "title": "Client State",
+      "question": "Do you have a client-side state-management preference for the Streamlit UI/API client?",
+      "importance": "optional",
+      "impact": 1,
+      "recommended": "preserve existing pattern if identifiable; otherwise recommend minimal (component state + server-state library)",
+      "default": "preserve existing pattern if identifiable; otherwise recommend minimal (component state + server-state library)",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "preserve existing pattern if identifiable; otherwise recommend minimal (component state + server-state library)",
+          "label": "Preserve existing pattern; otherwise use a minimal approach"
+        },
+        {
+          "value": "none / component state is enough",
+          "label": "No additional state library"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F10",
+      "kit": "frontend",
+      "field": "routing.preference",
+      "title": "Routing Strategy",
+      "question": "Do you have a routing preference for the Streamlit UI?",
+      "importance": "optional",
+      "impact": 1,
+      "recommended": "use the de-facto router for the chosen target framework",
+      "default": "use the de-facto router for the chosen target framework",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "use the de-facto router for the chosen target framework",
+          "label": "Use the framework-default routing approach"
+        },
+        {
+          "value": "match existing",
+          "label": "Match existing routing behavior"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B1",
+      "kit": "backend",
+      "field": "target.framework",
+      "title": "FastAPI Version",
+      "question": "You fixed FastAPI as the REST/BFF backend. Which exact version policy should apply: select a version compatible with the project's Python/runtime and pinned dependencies during implementation, or specify a target version?",
+      "importance": "required",
+      "impact": 4,
+      "recommended": "FastAPI; choose a compatible version during implementation and record the pin",
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "FastAPI; choose a compatible version during implementation and record the pin",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "FastAPI; choose a compatible version during implementation and record the pin",
+          "label": "Select a compatible FastAPI version during implementation and record the pin"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B2",
+      "kit": "backend",
+      "field": "api.contract_preservation",
+      "title": "API Compatibility",
+      "question": "What compatibility policy should apply to existing external API clients, if any, versus the newly introduced versioned REST/MCP contracts?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "must preserve",
+      "default": "must preserve",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "must preserve",
+          "label": "Must preserve existing external API contracts unchanged"
+        },
+        {
+          "value": "can break with versioning",
+          "label": "Breaking changes are allowed only with API versioning"
+        },
+        {
+          "value": "can break",
+          "label": "Existing API clients need not be preserved"
+        },
+        {
+          "value": "partial: preserve current user-visible behavior and keep new REST/MCP contracts versioned and stable",
+          "label": "Preserve current user-visible behavior; version and maintain the new REST/MCP contracts"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B3",
+      "kit": "backend",
+      "field": "data.migration_strategy",
+      "title": "SQLite Data Strategy",
+      "question": "What data/schema migration strategy should be used while retaining SQLite and leaving data/yki.db and other user data untouched?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "no migration",
+      "default": "TBD / assess in research phase",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "in-place",
+          "label": "In-place schema changes to the existing SQLite database"
+        },
+        {
+          "value": "dual-write",
+          "label": "New schema alongside existing data with synchronization"
+        },
+        {
+          "value": "new schema",
+          "label": "New schema with a planned data migration"
+        },
+        {
+          "value": "no migration",
+          "label": "No schema/data migration; retain existing database shape"
+        },
+        {
+          "value": "TBD / assess in research phase",
+          "label": "Assess and decide during the research phase"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B4",
+      "kit": "backend",
+      "field": "auth.framework",
+      "title": "Authentication Scope",
+      "question": "Confirm the authentication policy: identity/authentication remains an unimplemented, disabled extension point in this rearchitecture, with no functioning authentication added. If a future framework should be documented, specify it.",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "No authentication implementation; identity remains a disabled extension point",
+      "default": "preserve existing auth mechanism; detect from codebase",
+      "prefilled": true,
+      "prefilled_value": "No authentication implementation; identity remains a disabled extension point",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "No authentication implementation; identity remains a disabled extension point",
+          "label": "No authentication now; retain disabled identity extension point"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B5",
+      "kit": "backend",
+      "field": "nfr.sla",
+      "title": "Service Targets",
+      "question": "What latency, throughput, and availability targets should the REST and MCP services meet?",
+      "importance": "recommended",
+      "impact": 2,
+      "recommended": null,
+      "default": "match current production baseline; no regression",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    },
+    {
+      "id": "G1",
+      "kit": "generic",
+      "field": "success.definition",
+      "title": "Definition of Success",
+      "question": "Confirm the completion criterion for this rearchitecture.",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "All existing functionality and user-visible behavior preserved, with both services runnable and migration verified by tests",
+      "default": "feature parity with the current system; all existing user-facing behaviors preserved",
+      "prefilled": true,
+      "prefilled_value": "All existing functionality and user-visible behavior preserved, with both services runnable and migration verified by tests",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "All existing functionality and user-visible behavior preserved, with both services runnable and migration verified by tests",
+          "label": "Preserve all existing functionality/behavior; keep the app runnable and verify with tests"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "G2",
+      "kit": "generic",
+      "field": "out_of_scope",
+      "title": "Explicit Exclusions",
+      "question": "Confirm the protected or excluded scope, including preserving unrelated modules and user changes, not touching .env or user data, and not implementing fake Listening/Speaking, authentication, or billing behavior.",
+      "importance": "recommended",
+      "impact": 4,
+      "recommended": null,
+      "default": "no explicit exclusions; agent will infer from project structure",
+      "prefilled": true,
+      "prefilled_value": "Do not inspect, copy, print, or edit .env; do not modify data/yki.db or other user data; preserve pre-existing uncommitted changes; do not modify unrelated modules; do not implement fake Listening/Speaking features or functional identity/auth/payment; do not commit or perform destructive git operations.",
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    },
+    {
+      "id": "G3",
+      "kit": "generic",
+      "field": "existing_tests.posture",
+      "title": "Existing Test Policy",
+      "question": "Confirm how the existing suite should be treated given the stated baseline of 123 passing tests and two unrelated failures.",
+      "importance": "recommended",
+      "impact": 4,
+      "recommended": "partial: retain all passing tests; report the two identified baseline failures as pre-existing and prevent new regressions",
+      "default": "must pass",
+      "prefilled": true,
+      "prefilled_value": "partial: retain all passing tests; report the two identified baseline failures as pre-existing and prevent new regressions",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "must pass",
+          "label": "All tests must pass; fix failures as part of this migration"
+        },
+        {
+          "value": "partial: retain all passing tests; report the two identified baseline failures as pre-existing and prevent new regressions",
+          "label": "Preserve passing tests; report the two known baseline failures separately and prevent new regressions"
+        },
+        {
+          "value": "can rewrite",
+          "label": "Existing tests may be replaced with equivalent coverage"
+        },
+        {
+          "value": "ignore",
+          "label": "Ignore existing tests and write new tests"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "G4",
+      "kit": "generic",
+      "field": "target.output_location",
+      "title": "Output Location",
+      "question": "Confirm where the rearchitecture should be written: the specified apps/, packages/, backend/, and infrastructure/ structure inside the current repository (in-place), a new sibling directory, or another path.",
+      "importance": "required",
+      "impact": 4,
+      "recommended": "in-place",
+      "default": "in-place",
+      "prefilled": true,
+      "prefilled_value": "in-place",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "in-place",
+          "label": "In the current repository (in-place)"
+        },
+        {
+          "value": "new sibling directory",
+          "label": "A new sibling directory"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "G5",
+      "kit": "generic",
+      "field": "constraints.additional",
+      "title": "Additional Constraints",
+      "question": "Add or confirm any other constraints, compliance requirements, dependencies, or operational rules beyond the decisions already listed.",
+      "importance": "optional",
+      "impact": 2,
+      "recommended": null,
+      "default": "None beyond the decisions listed in this specification.",
+      "prefilled": true,
+      "prefilled_value": "None beyond the decisions listed in this specification.",
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    }
+  ]
+}

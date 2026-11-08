@@ -1,5 +1,9 @@
 venv/
 .env
+.env.*
 __pycache__/
 *.pyc
 .idea/
+.pytest_cache/
+.coverage
+htmlcov/

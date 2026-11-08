@@ -1,0 +1,7 @@
+# ## Upstream Artifacts Consumed
+# - clarification.md and artifacts/t1-teamlead.md — user-specified module ownership and behavior constraints.
+# ## Evidence Mapping
+# - CLI entrypoint and seeder source → one current command; no independent command split was observed.
+unit: sample-library-seed
+commit: false
+candidate_splits: []

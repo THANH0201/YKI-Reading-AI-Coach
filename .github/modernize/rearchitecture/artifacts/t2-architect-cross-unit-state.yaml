@@ -1,0 +1,16 @@
+# ## Upstream Artifacts Consumed
+# - clarification.md and artifacts/t1-teamlead.md — preserve session/user data behavior.
+# ## Evidence Mapping
+# - Unit boundaries in unit_graph + Streamlit state reads/writes in views/* → flows.
+flows: []
+notes: >
+  No state writer/reader pair was found across the two current external units:
+  the Streamlit app is one page-level unit and the sample-library seeder is a
+  CLI. The Streamlit page itself has extensive intra-unit session state:
+  article content/ids, level, subject, question list, qN answers, deadline,
+  active/submitted/auto-submitted flags, example-exam flag, writing input and
+  result, pending tutor question and result. This does not meet the artifact's
+  cross-unit flow schema, but is a critical implicit state contract when the
+  UI is split from the backend. The target design must explicitly map its
+  lifecycle to versioned API payloads/session identifiers and keep user text
+  transient.

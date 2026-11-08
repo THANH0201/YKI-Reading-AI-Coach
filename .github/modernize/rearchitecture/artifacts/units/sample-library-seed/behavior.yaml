@@ -1,0 +1,31 @@
+# ## Upstream Artifacts Consumed
+# - clarification.md — preserve approved library/data and secret-handling rules.
+# - artifacts/t1-teamlead.md — preserve behavior and use isolated data in verification.
+# ## Evidence Mapping
+# - sample_exam_builder/__main__.py and seeder.py → current CLI effects and failure paths.
+unit: sample-library-seed
+side_effects:
+  - source_loc: "sample_exam_builder/__main__.py:9-11"
+    effect: "Initializes the SQLite schema before seed execution."
+    must_preserve: true
+  - source_loc: "sample_exam_builder/seeder.py:469"
+    effect: "Calls model generation and saves generated example articles/questions into the approved sample library."
+    must_preserve: true
+branches:
+  - source_loc: "sample_exam_builder/seeder.py:469"
+    condition: "One or more categories are full, model generation fails, or content/question validation rejects an item."
+    behavior: "Seed reports per-category counts/outcomes and does not save invalid generated material."
+    must_preserve: true
+error_paths:
+  - source_loc: "sample_exam_builder/__main__.py:9-25"
+    trigger: "SQLite initialization/seeding raises an error."
+    outcome: "CLI terminates with the exception; no separate HTTP contract exists."
+    contract: "Command-line process result."
+    must_preserve: true
+concurrency:
+  model: sync
+  tx_boundary:
+    source_loc: "repositories/article_repository.py:52-100"
+    scope: "Approved article insert and quota check are protected by BEGIN IMMEDIATE; generated questions are written through a separate repository call."
+    isolation: "SQLite default."
+    must_preserve: true
