@@ -15,7 +15,7 @@ from backend.shared.timer import (
 )
 
 from backend.functions.writting.ai.writing_analyzer import analyze_writing
-from frontend.pages.exam_page import (
+from views.exam_page import (
     render_exam,
     render_exam_results,
     render_exam_timer,

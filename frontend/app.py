@@ -7,7 +7,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 import streamlit as st
 
 from backend.database.init_db import init_db
-from frontend.pages.home_page import render_home
+from views.home_page import render_home
 
 st.set_page_config(page_title="YKI Reading AI Coach", layout="wide")
 
